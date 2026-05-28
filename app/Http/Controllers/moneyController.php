@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Support\Facades\Session;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class moneyController extends Controller
 {
@@ -14,99 +14,82 @@ class moneyController extends Controller
      */
     public function index()
     {
-        $List_products_shop = Session::get('List_products_shop', []);
-        $cart_count = count($List_products_shop);
-        // Crear un array con los productos y sus imagenes para poder colocar eso en el listado de carrito de compras
+        $listProductsShop = Session::get('List_products_shop', []);
+        $cart_count = count($listProductsShop);
+
         if ($cart_count > 0) {
-            $cartProducts = Product::whereIn('id', $List_products_shop)
-                ->with('productImages') // Obtener imágenes asociadas
+            $cartProducts = Product::whereIn('id', $listProductsShop)
+                ->with('productImages')
                 ->get();
-        }else{
-            $cartProducts = [];     
-              
+        } else {
+            $cartProducts = [];
         }
 
         $precioTotal = 0;
-        foreach($cartProducts as $product){
-            $precioTotal+=$product->price;
+        foreach ($cartProducts as $product) {
+            $precioTotal += $product->price;
         }
-        
-        return view("App.modules.money.index",compact("cartProducts","cart_count","precioTotal"));
-    }
 
+        return view('App.modules.money.index', compact('cartProducts', 'cart_count', 'precioTotal'));
+    }
 
     public function deposit_money(Request $request)
     {
-        
-        $money = $request->cantidad;
-        $user =  User::find(auth()->id());
-        $user->money = $user->money + $money;
+        $validated = $request->validate([
+            'cantidad' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $user = User::findOrFail(auth()->id());
+        $user->money = $user->money + $validated['cantidad'];
         $user->save();
-        $user =  User::find(auth()->id());
-        return redirect()->route("buyers.index");
+
+        return redirect()->route('buyers.index');
     }
 
-    
     public function withdraw_money(Request $request)
     {
-        $money = $request->cantidad;
-        $user =  User::find(auth()->id());
-         if($user->money - $money < 0 ){
-            
-            return redirect()->route("buyers.index");
-         } 
-         $user->money = $user->money - $money;
-         $user->save();
-        $user =  User::find(auth()->id());
-        return redirect()->route("buyers.index");
-        
+        $validated = $request->validate([
+            'cantidad' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $money = $validated['cantidad'];
+        $user = User::findOrFail(auth()->id());
+
+        if ($user->money - $money < 0) {
+            return redirect()->route('buyers.index');
+        }
+
+        $user->money = $user->money - $money;
+        $user->save();
+
+        return redirect()->route('buyers.index');
     }
-    
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //

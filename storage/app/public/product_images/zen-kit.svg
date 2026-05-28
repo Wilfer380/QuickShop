@@ -1,0 +1,9 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#fff1f2"/>
+  <circle cx="320" cy="360" r="110" fill="#fecdd3"/>
+  <rect x="520" y="310" width="180" height="300" rx="30" fill="#fb7185"/>
+  <rect x="740" y="390" width="130" height="220" rx="24" fill="#fda4af"/>
+  <ellipse cx="610" cy="690" rx="320" ry="38" fill="#fecdd3"/>
+  <text x="80" y="120" fill="#111827" font-size="70" font-family="Arial" font-weight="700">Zen Balance</text>
+  <text x="80" y="178" fill="#be123c" font-size="34" font-family="Arial">Self-care kit with premium essentials</text>
+</svg>
