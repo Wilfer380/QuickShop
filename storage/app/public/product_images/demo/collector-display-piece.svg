@@ -1,0 +1,29 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" rx="48" fill="#0F172A"/>
+  <rect x="44" y="44" width="1112" height="812" rx="36" fill="url(#paint0_linear)"/>
+  <circle cx="1000" cy="150" r="150" fill="rgba(255,255,255,0.14)"/>
+  <circle cx="170" cy="760" r="180" fill="rgba(255,255,255,0.08)"/>
+  <rect x="96" y="96" width="1008" height="708" rx="28" fill="rgba(15,23,42,0.22)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <text x="120" y="180" fill="#FFF7ED" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" letter-spacing="3">QUICKSHOP</text>
+  <text x="120" y="250" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="800">Collector Display Piece</text>
+  <text x="120" y="314" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600">Categoría: Coleccionables</text>
+  <rect x="120" y="360" width="280" height="64" rx="32" fill="rgba(15,23,42,0.32)" stroke="rgba(255,255,255,0.16)"/>
+  <text x="160" y="401" fill="#DBEAFE" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Collectibles</text>
+  <rect x="720" y="206" width="250" height="250" rx="60" fill="rgba(255,255,255,0.16)"/>
+  <circle cx="845" cy="331" r="94" fill="rgba(124,58,237,0.24)"/>
+  <text x="845" y="365" text-anchor="middle" fill="white" font-family="'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',Arial,sans-serif" font-size="120">🃏</text>
+  <rect x="120" y="498" width="528" height="204" rx="28" fill="rgba(255,255,255,0.12)"/>
+  <text x="156" y="578" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">Imagen representativa de Coleccionables</text>
+  <text x="156" y="630" fill="#E2E8F0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="500">Cada categoría usa una visual distinta acorde al producto.</text>
+  <text x="156" y="670" fill="#E2E8F0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="500">Así el catálogo se entiende mucho mejor a simple vista.</text>
+  <rect x="720" y="520" width="284" height="120" rx="26" fill="rgba(15,23,42,0.22)" stroke="rgba(255,255,255,0.16)"/>
+  <text x="760" y="575" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Visual category match</text>
+  <text x="760" y="615" fill="#E2E8F0" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="500">Coleccionables</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="100" y1="80" x2="1100" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="0.55" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+</svg>

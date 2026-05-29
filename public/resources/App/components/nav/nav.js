@@ -1,31 +1,32 @@
-let btn_option_users = document.getElementById("btn_option_users");
+const userToggle = document.getElementById('btn_option_users');
+const userMenu = document.getElementById('select_option_users');
+const cartToggle = document.getElementById('btn_option_shop');
+const cartMenu = document.getElementById('select_option_shop');
 
-
-btn_option_users.addEventListener("click",function(){
-
-    let select_option_users = document.getElementById("select_option_users");
-
-    if(select_option_users.classList.contains("hidden")){
-        select_option_users.classList.remove("hidden")
-    }else{
-        select_option_users.classList.add("hidden")
+const toggleMenu = (menu) => {
+    if (!menu) {
+        return;
     }
-    
-    
-})
 
+    menu.classList.toggle('hidden');
+};
 
-let btn_option_shop = document.getElementById("btn_option_shop");
+userToggle?.addEventListener('click', () => {
+    toggleMenu(userMenu);
+    cartMenu?.classList.add('hidden');
+});
 
-btn_option_shop.addEventListener("click",function(){
-    let select_option_shop = document.getElementById("select_option_shop");
+cartToggle?.addEventListener('click', () => {
+    toggleMenu(cartMenu);
+    userMenu?.classList.add('hidden');
+});
 
-    if(select_option_shop.classList.contains("hidden")){
-        select_option_shop.classList.remove("hidden")
-    }else{
-        select_option_shop.classList.add("hidden")
+document.addEventListener('click', (event) => {
+    if (userMenu && userToggle && !userMenu.contains(event.target) && !userToggle.contains(event.target)) {
+        userMenu.classList.add('hidden');
     }
-    
-    
 
-})
+    if (cartMenu && cartToggle && !cartMenu.contains(event.target) && !cartToggle.contains(event.target)) {
+        cartMenu.classList.add('hidden');
+    }
+});

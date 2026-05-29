@@ -9,12 +9,10 @@ class CategorySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        DB::table('categories')->insert([
+        $categories = [
             ['name' => 'Tecnología', 'description' => 'Dispositivos, gadgets y software.'],
             ['name' => 'Ropa', 'description' => 'Prendas de vestir, accesorios de moda y calzado.'],
             ['name' => 'Deportes', 'description' => 'Equipamiento deportivo, ropa y accesorios para el deporte.'],
@@ -44,6 +42,17 @@ class CategorySeeder extends Seeder
             ['name' => 'Regalos y Ocasiones', 'description' => 'Artículos para regalar en cumpleaños, aniversarios y ocasiones especiales.'],
             ['name' => 'Cervezas Artesanales y Licores', 'description' => 'Cervezas artesanales, vinos y licores de todo el mundo.'],
             ['name' => 'Coleccionables', 'description' => 'Cómics, artículos raros y coleccionables de diversas categorías.'],
-        ]);
+        ];
+
+        foreach ($categories as $category) {
+            DB::table('categories')->updateOrInsert(
+                ['name' => $category['name']],
+                [
+                    'description' => $category['description'],
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
     }
 }

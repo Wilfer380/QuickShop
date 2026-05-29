@@ -1,3 +1,130 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .auth-shell {
+        @apply relative min-h-screen overflow-hidden bg-slate-950 px-4 py-6 sm:px-6 lg:px-8;
+    }
+
+    .auth-shell__backdrop {
+        @apply absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.28),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.22),_transparent_26%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)];
+    }
+
+    .auth-shell__content {
+        @apply relative z-10 mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-2xl shadow-slate-950/40 backdrop-blur;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    }
+
+    .auth-showcase {
+        @apply hidden flex-col justify-between gap-8 border-r border-white/10 bg-slate-950/40 p-10 text-white lg:flex;
+    }
+
+    .auth-showcase__brand {
+        @apply inline-flex items-center gap-4 no-underline;
+    }
+
+    .auth-showcase__brand img {
+        @apply h-16 w-16 rounded-2xl bg-white/95 object-contain p-2;
+    }
+
+    .auth-showcase__brand strong {
+        @apply block text-xl font-black tracking-tight text-white;
+    }
+
+    .auth-showcase__brand span {
+        @apply mt-1 block text-sm font-medium text-slate-300;
+    }
+
+    .auth-showcase__copy h1 {
+        @apply mt-4 text-4xl font-black leading-tight tracking-tight;
+    }
+
+    .auth-showcase__copy p {
+        @apply mt-4 max-w-xl text-base leading-7 text-slate-300;
+    }
+
+    .auth-pill {
+        @apply inline-flex rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-orange-200;
+    }
+
+    .auth-showcase__stats {
+        @apply grid gap-4 xl:grid-cols-2;
+    }
+
+    .auth-showcase__stats article {
+        @apply rounded-3xl border border-white/10 bg-white/5 p-5;
+    }
+
+    .auth-showcase__stats strong {
+        @apply block text-lg font-extrabold text-white;
+    }
+
+    .auth-showcase__stats span {
+        @apply mt-2 block text-sm leading-6 text-slate-300;
+    }
+
+    .auth-card {
+        @apply flex items-center justify-center bg-white px-6 py-10 sm:px-8 lg:px-12;
+    }
+
+    .auth-card > * {
+        @apply w-full max-w-xl;
+    }
+
+    .auth-card__header {
+        @apply mb-8;
+    }
+
+    .auth-card__eyebrow {
+        @apply inline-flex rounded-full bg-orange-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-orange-600;
+    }
+
+    .auth-card__header h2 {
+        @apply mt-4 text-3xl font-black leading-tight tracking-tight text-slate-950;
+    }
+
+    .auth-card__header p {
+        @apply mt-3 text-sm leading-6 text-slate-500;
+    }
+
+    .auth-form {
+        @apply grid gap-5;
+    }
+
+    .auth-form__split {
+        @apply grid gap-5 md:grid-cols-2;
+    }
+
+    .auth-input {
+        @apply rounded-2xl border-slate-200 px-4 py-3 shadow-sm focus:border-orange-400 focus:ring-orange-300;
+    }
+
+    .auth-form__row {
+        @apply flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .auth-check {
+        @apply inline-flex items-center gap-3;
+    }
+
+    .auth-check input {
+        @apply rounded border-slate-300 text-orange-500 shadow-sm focus:ring-orange-400;
+    }
+
+    .auth-inline-link {
+        @apply font-semibold text-slate-500 underline-offset-4 transition hover:text-slate-900 hover:underline;
+    }
+
+    .auth-form__actions {
+        @apply flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .auth-secondary-button {
+        @apply inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-slate-200 px-5 text-sm font-extrabold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50;
+    }
+
+    .auth-primary-button {
+        @apply inline-flex min-h-[52px] items-center justify-center rounded-2xl border-0 bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-sm font-extrabold text-white shadow-lg shadow-orange-500/30 transition hover:from-orange-600 hover:to-rose-600;
+    }
+}

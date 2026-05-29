@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Session;
 
 class SellerController extends Controller
@@ -18,8 +19,8 @@ class SellerController extends Controller
     {
         $userId = Auth::user()->id;
 
-        $products_user = Product::where('user_id', $userId)->with('productImages')->get();
-        $categories = Category::all();
+        $products_user = Product::where('user_id', $userId)->with(['productImages', 'category'])->get();
+        $categories = Category::orderBy('name')->get();
 
         $listProductsShop = Session::get('List_products_shop', []);
         $cart_count = count($listProductsShop);
@@ -45,7 +46,7 @@ class SellerController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
 
         $listProductsShop = Session::get('List_products_shop', []);
         $cart_count = count($listProductsShop);
@@ -77,7 +78,7 @@ class SellerController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp,svg|max:4096',
         ]);
 
         $product = Product::create([
@@ -108,7 +109,7 @@ class SellerController extends Controller
 
     public function edit(string $id)
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         $product = Product::findOrFail($id);
 
         if ($product->user_id !== auth()->id()) {
@@ -144,7 +145,7 @@ class SellerController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:4096',
         ]);
 
         $product = Product::with('productImages')->findOrFail($id);
@@ -165,7 +166,7 @@ class SellerController extends Controller
                 $imagePath = storage_path('app/public/' . $image->image_path);
 
                 if (file_exists($imagePath)) {
-                    unlink($imagePath);
+                    File::delete($imagePath);
                 }
 
                 $image->delete();
@@ -194,7 +195,7 @@ class SellerController extends Controller
             $imagePath = storage_path('app/public/' . $image->image_path);
 
             if (file_exists($imagePath)) {
-                unlink($imagePath);
+                File::delete($imagePath);
             }
 
             $image->delete();

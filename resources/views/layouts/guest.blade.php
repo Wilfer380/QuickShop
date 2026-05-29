@@ -5,26 +5,52 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'QuickShop') }}</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <img src="{{asset('resources/img_empresa/logo_quickShop.png')}}" alt="" width="200px" height="200px">
-                </a>
-            </div>
+    <body class="font-sans text-slate-900 antialiased">
+        <div class="auth-shell">
+            <div class="auth-shell__backdrop"></div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+            <main class="auth-shell__content">
+                <section class="auth-showcase">
+                    <a href="/" class="auth-showcase__brand">
+                        <img src="{{ asset('resources/img_empresa/logo_quickShop.png') }}" alt="QuickShop logo">
+                        <div>
+                            <strong>QuickShop</strong>
+                            <span>Marketplace experience</span>
+                        </div>
+                    </a>
+
+                    <div class="auth-showcase__copy">
+                        <span class="auth-pill">Compra y vendé mejor</span>
+                        <h1>Una entrada mucho más seria para una plataforma de ventas.</h1>
+                        <p>
+                            Mejoramos la experiencia de acceso para que registro e inicio de sesión acompañen el
+                            nivel visual del catálogo.
+                        </p>
+                    </div>
+
+                    <div class="auth-showcase__stats">
+                        <article>
+                            <strong>Catálogo</strong>
+                            <span>Productos con imagen, referencia, stock y precio claros.</span>
+                        </article>
+                        <article>
+                            <strong>Compra</strong>
+                            <span>Flujos más consistentes para carrito, saldo y checkout.</span>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="auth-card">
+                    {{ $slot }}
+                </section>
+            </main>
         </div>
     </body>
 </html>
