@@ -1,8 +1,0 @@
-<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="900" fill="#eff6ff"/>
-  <path d="M440 310c0-90 70-160 160-160s160 70 160 160v70h25c32 0 60 28 60 60v220c0 33-27 60-60 60H415c-33 0-60-27-60-60V440c0-32 28-60 60-60h25v-70Z" fill="#1e3a8a"/>
-  <path d="M520 310c0-44 36-80 80-80s80 36 80 80v70H520v-70Z" fill="#93c5fd"/>
-  <rect x="520" y="450" width="160" height="115" rx="20" fill="#bfdbfe"/>
-  <text x="80" y="120" fill="#111827" font-size="70" font-family="Arial" font-weight="700">WorkFlow Tech</text>
-  <text x="80" y="178" fill="#1d4ed8" font-size="34" font-family="Arial">Modern backpack for hybrid work</text>
-</svg>

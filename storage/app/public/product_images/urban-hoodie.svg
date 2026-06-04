@@ -1,7 +1,0 @@
-<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="900" fill="#f8fafc"/>
-  <path d="M390 260c30-85 110-140 210-140s180 55 210 140l100 90-80 90-55-45v310H425V395l-55 45-80-90 100-90Z" fill="#7c3aed"/>
-  <path d="M500 220c25-30 55-45 100-45s75 15 100 45l-45 80H545l-45-80Z" fill="#5b21b6"/>
-  <text x="80" y="120" fill="#111827" font-size="70" font-family="Arial" font-weight="700">Urban Cloud</text>
-  <text x="80" y="178" fill="#6d28d9" font-size="34" font-family="Arial">Comfort hoodie with premium feel</text>
-</svg>

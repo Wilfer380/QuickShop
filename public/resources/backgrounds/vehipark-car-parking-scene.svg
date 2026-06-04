@@ -1,0 +1,74 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#030615"/>
+      <stop offset="0.52" stop-color="#0A1020"/>
+      <stop offset="1" stop-color="#160B2B"/>
+    </linearGradient>
+    <radialGradient id="glowL" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(350 720) rotate(90) scale(420 760)">
+      <stop stop-color="#8B5CF6" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowR" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1630 310) rotate(90) scale(370 580)">
+      <stop stop-color="#A855F7" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="car" x1="350" y1="680" x2="1260" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1F2937"/>
+    </linearGradient>
+    <linearGradient id="carTop" x1="460" y1="610" x2="1120" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17112C"/>
+      <stop offset="1" stop-color="#2E1A50"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#glowL)"/>
+  <rect width="1920" height="1080" fill="url(#glowR)"/>
+
+  <g opacity="0.18" fill="#A78BFA">
+    <circle cx="90" cy="80" r="3"/><circle cx="130" cy="80" r="3"/><circle cx="170" cy="80" r="3"/><circle cx="210" cy="80" r="3"/><circle cx="250" cy="80" r="3"/>
+    <circle cx="90" cy="120" r="3"/><circle cx="130" cy="120" r="3"/><circle cx="170" cy="120" r="3"/><circle cx="210" cy="120" r="3"/><circle cx="250" cy="120" r="3"/>
+    <circle cx="90" cy="160" r="3"/><circle cx="130" cy="160" r="3"/><circle cx="170" cy="160" r="3"/><circle cx="210" cy="160" r="3"/><circle cx="250" cy="160" r="3"/>
+  </g>
+
+  <g opacity="0.23">
+    <rect x="70" y="110" width="110" height="500" rx="6" fill="#0F172A"/>
+    <rect x="98" y="160" width="12" height="12" fill="#F59E0B"/>
+    <rect x="122" y="192" width="12" height="12" fill="#F59E0B"/>
+    <rect x="98" y="228" width="12" height="12" fill="#F59E0B"/>
+    <rect x="122" y="260" width="12" height="12" fill="#F59E0B"/>
+    <rect x="98" y="296" width="12" height="12" fill="#F59E0B"/>
+    <rect x="122" y="328" width="12" height="12" fill="#F59E0B"/>
+    <rect x="98" y="364" width="12" height="12" fill="#F59E0B"/>
+  </g>
+
+  <g opacity="0.22">
+    <path d="M0 840L520 620L740 660" stroke="#C084FC" stroke-width="3"/>
+    <path d="M260 1080L470 760L930 650" stroke="#C084FC" stroke-width="3"/>
+    <path d="M1280 1080L1540 620L1920 540" stroke="#A855F7" stroke-width="3"/>
+  </g>
+
+  <g transform="translate(150 706)">
+    <path d="M0 130L260 20H640L920 130V270H0V130Z" fill="#040816" opacity="0.85"/>
+    <path d="M78 130L290 42H610L824 130V270H78V130Z" fill="#0C1224"/>
+    <path d="M150 94L290 30H602L724 92" stroke="#6B7280" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="110" y="96" width="160" height="18" rx="9" fill="#7C3AED" opacity="0.7"/>
+    <text x="110" y="210" fill="#A78BFA" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="52">PARKING</text>
+  </g>
+
+  <g transform="translate(180 670)">
+    <path d="M90 200H880L820 118L635 84H318L170 108L90 200Z" fill="url(#car)"/>
+    <path d="M210 118L312 42H620L728 114" fill="url(#carTop)"/>
+    <path d="M250 112H620L700 154H202L250 112Z" fill="#17112C"/>
+    <path d="M202 154H700L820 200H90L202 154Z" fill="#0B1020"/>
+    <path d="M318 42H586L620 114H290L318 42Z" fill="#1A1530"/>
+    <rect x="362" y="58" width="168" height="34" rx="16" fill="#8B5CF6" opacity="0.5"/>
+    <circle cx="292" cy="198" r="34" fill="#020617" stroke="#8B5CF6" stroke-width="5"/>
+    <circle cx="682" cy="198" r="34" fill="#020617" stroke="#8B5CF6" stroke-width="5"/>
+    <circle cx="292" cy="198" r="11" fill="#C4B5FD"/>
+    <circle cx="682" cy="198" r="11" fill="#C4B5FD"/>
+    <rect x="112" y="152" width="686" height="8" rx="4" fill="#6D28D9" opacity="0.65"/>
+    <path d="M384 70H530" stroke="#F8FAFC" stroke-opacity="0.25" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

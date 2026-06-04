@@ -14,9 +14,8 @@ class ProductImage extends Model
         'image_path',
     ];
 
-    // Relación con producto (una imagen pertenece a un producto)
     public function product()
-{
-    return $this->belongsTo(Product::class);
-}
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

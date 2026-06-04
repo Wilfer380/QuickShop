@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" role="img" aria-labelledby="title desc">
+  <title id="title">VehiPark car logo</title>
+  <desc id="desc">Dark automotive logo with a car silhouette and VehiPark wordmark</desc>
+  <rect width="240" height="80" rx="18" fill="#0F172A"/>
+  <path d="M34 48c5-12 13-18 25-18h20c9 0 16 3 20 10l7 1c7 1 12 6 14 13l1 6H29l5-12Z" fill="#F97316"/>
+  <circle cx="58" cy="58" r="8" fill="#F8FAFC"/>
+  <circle cx="162" cy="58" r="8" fill="#F8FAFC"/>
+  <path d="M78 32h36c6 0 11 2 14 7h-54c2-4 5-7 4-7Z" fill="#2563EB" opacity="0.95"/>
+  <text x="102" y="29" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="1.5">VEHIPARK</text>
+  <text x="102" y="49" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="600">Admin Fleet</text>
+</svg>

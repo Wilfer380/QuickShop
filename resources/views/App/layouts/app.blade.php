@@ -13,7 +13,7 @@
     <script src="{{asset('resources/App/components/nav/nav.js')}}" defer></script>
     @yield("links_css_js")
 </head>
-<body>
+<body class="vehipark-ops-body">
     
     {{-- Navegacióon que se mostrara en todas las paginas --}}
     @include("App.components.nav.nav")

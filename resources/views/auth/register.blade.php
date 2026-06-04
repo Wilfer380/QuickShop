@@ -1,52 +1,125 @@
 <x-guest-layout>
-    <div class="auth-card__header">
-        <span class="auth-card__eyebrow">Nueva cuenta</span>
-        <h2>Creá tu acceso y empezá a usar QuickShop con una experiencia más profesional.</h2>
-        <p>Registrate para comprar, vender y seguir construyendo una tienda más sólida.</p>
+    <div class="auth-card__title">
+        <h2>Crear cuenta</h2>
+        <p>Completa el formulario para registrarte</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" class="auth-form">
+    <form method="POST" action="{{ route('register') }}" x-data="{ showPassword: false, showConfirmation: false }" class="auth-register-layout">
         @csrf
 
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="auth-input mt-2 block w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+        <div class="auth-register-layout__main">
+            <div class="auth-form-grid">
+                <div class="auth-field">
+                    <label for="name">Nombre completo</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c1.5-3.6 4.4-5.5 8-5.5S18.5 16.4 20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <input id="name" class="auth-input" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="Ingresa tu nombre completo">
+                    </div>
+                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="auth-input mt-2 block w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <div class="auth-form__split">
-            <div>
-                <x-input-label for="password" :value="__('Password')" />
-                <x-text-input id="password" class="auth-input mt-2 block w-full"
-                                type="password"
-                                name="password"
-                                required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                <div class="auth-field">
+                    <label for="email">Correo electrónico</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16v12H4z" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <input id="email" class="auth-input" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="ejemplo@vehipark.com">
+                    </div>
+                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                </div>
             </div>
 
-            <div>
-                <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-                <x-text-input id="password_confirmation" class="auth-input mt-2 block w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <div class="auth-form-grid">
+                <div class="auth-field">
+                    <label for="phone">Teléfono</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5c1.2 3 2.9 5.4 6 8l2-2.2c.5-.5 1.2-.6 1.8-.3l2.5 1.3c.9.5 1.3 1.5.9 2.5l-1 2.4c-.4 1-1.3 1.6-2.4 1.4C10 19.4 4.6 14 3.7 5.6 3.6 4.4 4.3 3.4 5.4 3l2.4-1c1-.4 2.1 0 2.5.9L11.6 5.4c.3.6.2 1.3-.3 1.8L9 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <input id="phone" class="auth-input" type="text" name="phone" value="{{ old('phone') }}" autocomplete="tel" placeholder="300 123 4567">
+                    </div>
+                    <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+                </div>
+
+                <div class="auth-field">
+                    <label for="document">Documento de identidad</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="1.8"/><path d="M8 8h8M8 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <input id="document" class="auth-input" type="text" name="document" value="{{ old('document') }}" autocomplete="off" placeholder="CC o NIT">
+                    </div>
+                    <x-input-error :messages="$errors->get('document')" class="mt-2" />
+                </div>
+            </div>
+
+            <div class="auth-form-grid">
+                <div class="auth-field">
+                    <label for="password">Contraseña</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="16" r="1.4" fill="currentColor"/></svg>
+                        <input id="password" class="auth-input auth-input--password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" placeholder="••••••••">
+                        <button type="button" class="auth-input-toggle" @click="showPassword = !showPassword" aria-label="Mostrar contraseña">
+                            <svg x-show="!showPassword" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+                            <svg x-show="showPassword" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10.6 10.6A2.8 2.8 0 0 0 12 15c1.5 0 2.8-1.3 2.8-2.8 0-.5-.1-1-.4-1.4" stroke="currentColor" stroke-width="1.8"/></svg>
+                        </button>
+                    </div>
+                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                </div>
+
+                <div class="auth-field">
+                    <label for="password_confirmation">Confirmar contraseña</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="16" r="1.4" fill="currentColor"/></svg>
+                        <input id="password_confirmation" class="auth-input auth-input--password" :type="showConfirmation ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" placeholder="••••••••">
+                        <button type="button" class="auth-input-toggle" @click="showConfirmation = !showConfirmation" aria-label="Mostrar confirmación">
+                            <svg x-show="!showConfirmation" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+                            <svg x-show="showConfirmation" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10.6 10.6A2.8 2.8 0 0 0 12 15c1.5 0 2.8-1.3 2.8-2.8 0-.5-.1-1-.4-1.4" stroke="currentColor" stroke-width="1.8"/></svg>
+                        </button>
+                    </div>
+                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+                </div>
             </div>
         </div>
 
-        <div class="auth-form__actions">
-            <a class="auth-secondary-button" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
+        <div class="auth-register-layout__side">
+            <div class="auth-field">
+                <label for="role">Rol</label>
+                <div class="auth-input-wrap">
+                    <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 4v5c0 5-3.5 8.5-7 9.8C8.5 20.5 5 17 5 12V7l7-4Z" stroke="currentColor" stroke-width="1.8"/><path d="M8 12l2.2 2.2L16 8.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <select id="role" class="auth-input" name="role" required>
+                        <option value="">Selecciona un rol</option>
+                        <option value="admin" @selected(old('role') === 'admin')>Administrador</option>
+                        <option value="empleado" @selected(old('role') === 'empleado')>Vendedor</option>
+                        <option value="supervisor" @selected(old('role') === 'supervisor')>Cajero</option>
+                        <option value="empleado" @selected(old('role') === 'operador')>Operador de parqueadero</option>
+                    </select>
+                </div>
+                <x-input-error :messages="$errors->get('role')" class="mt-2" />
+            </div>
 
-            <x-primary-button class="auth-primary-button">
-                {{ __('Register') }}
-            </x-primary-button>
+            <div class="auth-password-box">
+                <div class="auth-password-box__header">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 4 5.5V12c0 5.1 3.6 9.7 8 10 4.4-.3 8-4.9 8-10V5.5L12 2Z" stroke="currentColor" stroke-width="1.8"/><path d="M9.2 12.4 11 14.2l3.8-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>La contraseña debe contener:</span>
+                </div>
+                <ul class="auth-rule-list">
+                    <li><svg viewBox="0 0 20 20" fill="none"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Mínimo 8 caracteres</li>
+                    <li><svg viewBox="0 0 20 20" fill="none"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Una letra mayúscula</li>
+                    <li><svg viewBox="0 0 20 20" fill="none"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Un número</li>
+                    <li><svg viewBox="0 0 20 20" fill="none"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Un carácter especial</li>
+                </ul>
+            </div>
+
+            <label class="auth-check">
+                <input type="checkbox" name="terms" required>
+                <span>Acepto los <a href="#" class="auth-link">Términos y Condiciones</a> y la <a href="#" class="auth-link">Política de Privacidad</a></span>
+            </label>
+
+            <button type="submit" class="auth-button auth-button--primary w-full">
+                <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5" aria-hidden="true"><path d="M12 2a5 5 0 0 1 5 5v2h1.5A2.5 2.5 0 0 1 21 11.5v7A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5v-7A2.5 2.5 0 0 1 5.5 9H7V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 12v5M9.5 14.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>{{ __('Crear cuenta') }}</span>
+            </button>
+
+            <p class="auth-card__footnote">
+                ¿Ya tienes cuenta?
+                <a class="auth-link" href="{{ route('login') }}">Iniciar sesión</a>
+            </p>
         </div>
     </form>
 </x-guest-layout>

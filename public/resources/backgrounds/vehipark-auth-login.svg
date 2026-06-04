@@ -1,0 +1,51 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#040816"/>
+      <stop offset="0.52" stop-color="#0B1021"/>
+      <stop offset="1" stop-color="#120A24"/>
+    </linearGradient>
+    <radialGradient id="g2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(360 700) rotate(90) scale(420 700)">
+      <stop stop-color="#A855F7" stop-opacity="0.48"/>
+      <stop offset="1" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1560 260) rotate(90) scale(360 540)">
+      <stop stop-color="#7C3AED" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g1)"/>
+  <rect width="1920" height="1080" fill="url(#g2)"/>
+  <rect width="1920" height="1080" fill="url(#g3)"/>
+  <g opacity="0.26" stroke="#C4B5FD" stroke-width="2">
+    <path d="M0 850L510 610L710 650"/>
+    <path d="M250 1080L430 760L770 645"/>
+    <path d="M1250 1080L1510 620L1920 520"/>
+  </g>
+  <g opacity="0.2">
+    <rect x="70" y="120" width="120" height="520" rx="6" fill="#0F172A"/>
+    <rect x="105" y="160" width="12" height="12" fill="#F59E0B"/>
+    <rect x="130" y="190" width="12" height="12" fill="#F59E0B"/>
+    <rect x="105" y="230" width="12" height="12" fill="#F59E0B"/>
+    <rect x="130" y="270" width="12" height="12" fill="#F59E0B"/>
+    <rect x="105" y="310" width="12" height="12" fill="#F59E0B"/>
+    <rect x="130" y="350" width="12" height="12" fill="#F59E0B"/>
+  </g>
+  <g opacity="0.2" transform="translate(170 720)">
+    <path d="M0 110L240 15H470L695 110V255H0V110Z" fill="#020617"/>
+    <path d="M70 104L205 35H430L625 104V255H70V104Z" fill="#111827"/>
+    <rect x="38" y="78" width="165" height="16" rx="8" fill="#8B5CF6"/>
+    <text x="44" y="191" fill="#A78BFA" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="54">PARKING</text>
+  </g>
+  <g opacity="0.9" transform="translate(70 790)">
+    <path d="M0 120H520L445 50H120L0 120Z" fill="#090F1F"/>
+    <path d="M100 53L195 5H360L445 50" stroke="#6B7280" stroke-width="5" stroke-linecap="round"/>
+    <path d="M20 120L80 95L160 120" stroke="#6B7280" stroke-width="4"/>
+    <circle cx="95" cy="120" r="26" fill="#0F172A" stroke="#6366F1" stroke-width="4"/>
+    <circle cx="395" cy="120" r="26" fill="#0F172A" stroke="#6366F1" stroke-width="4"/>
+    <circle cx="95" cy="120" r="10" fill="#C4B5FD"/>
+    <circle cx="395" cy="120" r="10" fill="#C4B5FD"/>
+    <path d="M430 48H620L680 84H520L430 48Z" fill="#111827"/>
+    <circle cx="560" cy="84" r="20" fill="#1F2937" stroke="#A855F7" stroke-width="4"/>
+  </g>
+</svg>

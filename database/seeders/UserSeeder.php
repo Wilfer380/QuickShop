@@ -2,50 +2,52 @@
 
 namespace Database\Seeders;
 
+use App\Models\Rol;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class UserSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        DB::table('users')->insert([
+        $admin = User::query()->updateOrCreate(
+            ['email' => 'admin@gmail.com'],
             [
-                'name' => 'Admin',
-                'email' => 'admin@gmail.com',
+                'name' => 'Admin VehiPark',
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
-               
-            ],
-           
-        ]);
+                'status' => 'active',
+            ]
+        );
 
-        
-        DB::table('users')->insert([
+        User::query()->updateOrCreate(
+            ['email' => 'operador@vehipark.test'],
             [
-                'name' => 'buyer',
-                'email' => 'buyer@gmail.com',
-                'password' => Hash::make('buyer123'),
-                'role' => 'buyer',
-               
-            ],
-           
-        ]);
+                'name' => 'Operador VehiPark',
+                'password' => Hash::make('operador123'),
+                'role' => 'empleado',
+                'status' => 'active',
+            ]
+        );
 
-        
-        DB::table('users')->insert([
+        User::query()->updateOrCreate(
+            ['email' => 'supervisor@vehipark.test'],
             [
-                'name' => 'seller',
-                'email' => 'seller@gmail.com',
-                'password' => Hash::make('seller123'),
-                'role' => 'seller',
-               
-            ],
-           
-        ]);
+                'name' => 'Supervisor VehiPark',
+                'password' => Hash::make('supervisor123'),
+                'role' => 'supervisor',
+                'status' => 'active',
+            ]
+        );
 
+        if (Schema::hasTable('roles')) {
+            $role = Rol::query()->where('name', 'administrador')->first();
 
+            if ($role) {
+                $admin->roles()->syncWithoutDetaching([$role->id]);
+            }
+        }
     }
 }
