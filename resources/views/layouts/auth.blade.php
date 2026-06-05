@@ -38,17 +38,41 @@
             <div class="auth-shell__decor auth-shell__decor--orb"></div>
 
             <main class="auth-shell__content">
-                <header class="auth-brand-block">
-                    <img src="{{ asset('resources/img_empresa/logo_vehipark.svg') }}" alt="VehiPark logo" class="auth-brand-block__logo">
-                    <div class="auth-brand-block__copy">
-                        <h1>VehiPark</h1>
-                        <p>{{ $authPanel['tagline'] }}</p>
-                    </div>
-                </header>
+                <div class="auth-wrapper auth-wrapper--{{ $authMode }}">
+                    <aside class="auth-brand auth-brand-block">
+                        <div class="auth-brand__head auth-brand-block__head">
+                            <img src="{{ asset('resources/img_empresa/logo_vehipark.svg') }}" alt="VehiPark" class="logo-auth-icon auth-brand-block__logo">
+                            <h1 class="brand-title"><span>Vehi</span><span>Park</span></h1>
+                        </div>
 
-                <section class="auth-card auth-{{ $authMode }}-card">
-                    {{ $slot }}
-                </section>
+                        <div class="auth-brand__copy auth-brand-block__copy">
+                            <p>{{ $authPanel['tagline'] }}</p>
+                        </div>
+
+                        <ul class="auth-benefits">
+                            <li>
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Control de ventas.</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Gestión de parqueadero.</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Reportes en tiempo real.</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 10 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Seguridad y confianza.</span>
+                            </li>
+                        </ul>
+                    </aside>
+
+                    <section class="auth-card {{ $authMode === 'register' ? 'register-card auth-register-card' : 'login-card auth-login-card' }}">
+                        {{ $slot }}
+                    </section>
+                </div>
 
                 <footer class="auth-footer">{{ $authPanel['copyright'] }}</footer>
             </main>
