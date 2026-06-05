@@ -13,24 +13,41 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @stack('styles')
     </head>
-    <body class="bg-slate-950 font-sans text-slate-100 antialiased">
-        <div class="min-h-screen bg-slate-950 lg:flex">
-            @include('layouts.navigation')
+    <body class="font-sans antialiased">
+        @if (request()->routeIs('dashboard') || request()->routeIs('clientes.*') || request()->routeIs('vehiculos.*') || request()->routeIs('profile.*'))
+            <div x-data="{ sidebarOpen: window.innerWidth >= 1024 }" class="dashboard-shell">
+                <x-sidebar />
 
-            <div class="min-w-0 flex-1 lg:pl-72">
-                @isset($header)
-                    <header class="border-b border-white/10 bg-slate-900/80 shadow-2xl shadow-black/30">
-                        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
+                <div class="main-content" x-bind:class="sidebarOpen ? '' : 'is-collapsed'">
+                    <x-topbar />
 
-                <main>
-                    {{ $slot }}
-                </main>
+                    <main>
+                        {{ $slot }}
+                    </main>
+                </div>
             </div>
-        </div>
+        @else
+            <div class="min-h-screen bg-slate-950 text-slate-100 lg:flex">
+                @include('layouts.navigation')
+
+                <div class="min-w-0 flex-1 lg:pl-72">
+                    @isset($header)
+                        <header class="border-b border-white/10 bg-slate-900/80 shadow-2xl shadow-black/30">
+                            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
+
+                    <main>
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
+        @endif
+
+        @stack('scripts')
     </body>
 </html>

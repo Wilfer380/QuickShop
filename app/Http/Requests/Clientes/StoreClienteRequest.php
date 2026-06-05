@@ -21,6 +21,10 @@ class StoreClienteRequest extends FormRequest
             'telefono' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255', 'unique:clientes,email'],
             'direccion' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'ciudad' => ['nullable', 'string', 'max:120'],
+            'segmento' => ['required', 'in:frecuente,activo,nuevo,inactivo'],
+            'estado' => ['required', 'in:activo,inactivo'],
         ];
     }
 }

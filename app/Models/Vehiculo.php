@@ -19,6 +19,9 @@ class Vehiculo extends Model
         'modelo',
         'anio',
         'color',
+        'imagen',
+        'ubicacion',
+        'precio_compra',
         'vin',
         'kilometraje',
         'precio_venta',
@@ -30,8 +33,21 @@ class Vehiculo extends Model
     {
         return [
             'precio_venta' => 'decimal:2',
+            'precio_compra' => 'decimal:2',
             'kilometraje' => 'integer',
         ];
+    }
+
+    public function getUbicacionAttribute($value): ?string
+    {
+        return match ((string) $value) {
+            '0', 'inventario venta' => 'inventario venta',
+            '1', 'parqueadero' => 'parqueadero',
+            '2', 'taller' => 'taller',
+            '3', 'vendido' => 'vendido',
+            '4', 'reservado' => 'reservado',
+            default => $value,
+        };
     }
 
     public function cliente()

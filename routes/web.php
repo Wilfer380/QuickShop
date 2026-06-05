@@ -22,11 +22,14 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
+Route::get('vehiculos/{vehiculo}/imagen', [VehiculosController::class, 'imagen'])->name('vehiculos.imagen');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('panel')->group(function () {
+        Route::get('clientes/exportar/excel', [ClientesController::class, 'exportarExcel'])->name('clientes.exportar.excel');
         Route::resource('clientes', ClientesController::class);
+        Route::get('vehiculos/exportar', [VehiculosController::class, 'exportar'])->name('vehiculos.exportar');
         Route::resource('vehiculos', VehiculosController::class);
         Route::resource('ventas', VentasController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/parqueadero', [ParqueaderoController::class, 'index'])->name('parqueadero.index');
@@ -46,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile/avatar/{user}', [ProfileController::class, 'avatar'])->name('profile.avatar');
 
     Route::get('/vehicle-publications/index', [PublicationController::class, 'index'])->name('vehicle-publications.index');
     Route::get('/vehicle-publications/create', [PublicationController::class, 'create'])->name('vehicle-publications.create');

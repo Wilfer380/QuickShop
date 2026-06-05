@@ -8,8 +8,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -29,29 +28,46 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $email = Str::lower(trim((string) $request->email));
+        $request->merge(['email' => $email]);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'phone' => ['nullable', 'string', 'max:30'],
             'document' => ['nullable', 'string', 'max:40', 'unique:users,documento'],
             'role' => ['required', 'in:empleado,supervisor,admin'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                'min:8',
+                'regex:/[A-ZÁÉÍÓÚÑ]/u',
+                'regex:/\d/',
+                'regex:/[^A-Za-z0-9]/u',
+            ],
             'terms' => ['accepted'],
+        ], [
+            'password.required' => 'La contraseña no cumple con los caracteres requeridos.',
+            'password.min' => 'La contraseña no cumple con los caracteres requeridos.',
+            'password.regex' => 'La contraseña no cumple con los caracteres requeridos.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $email,
             'phone' => $request->phone,
             'documento' => $request->document,
             'role' => $request->role,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()
+            ->route('login')
+            ->with('status', 'Cuenta creada. Ahora inicia sesión con tu correo y contraseña.')
+            ->withInput(['email' => $email]);
     }
 }

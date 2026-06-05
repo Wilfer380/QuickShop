@@ -19,6 +19,10 @@ class Cliente extends Model
         'telefono',
         'email',
         'direccion',
+        'foto',
+        'ciudad',
+        'segmento',
+        'estado',
     ];
 
     public function vehiculos()

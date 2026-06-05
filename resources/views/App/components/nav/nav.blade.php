@@ -81,14 +81,14 @@
                 <span>Agregar vehiculo</span>
             </a>
 
-            <div class="nav-chip btn_option_users" id="btn_option_users">
+            <button type="button" class="nav-chip btn_option_users" id="btn_option_users" aria-haspopup="menu" aria-expanded="false">
                 <span>{{ Auth::user()->name }}</span>
-            </div>
+            </button>
 
             <div class="select_option_users hidden" id="select_option_users">
                 <div class="menu-heading">
-                    <strong>Cuenta interna</strong>
-                    <small>Perfil y sesion de empleado</small>
+                    <strong>{{ Auth::user()->name }}</strong>
+                    <small>{{ Auth::user()->email }} · {{ ucfirst(Auth::user()->role ?? 'usuario') }}</small>
                 </div>
 
                 <div class="option"><a href="{{ route('profile.edit') }}">Perfil empleado</a></div>
