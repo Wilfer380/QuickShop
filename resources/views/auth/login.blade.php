@@ -55,19 +55,6 @@
         </button>
     </form>
 
-    <div class="auth-divider">o continúa con</div>
-
-    <div class="auth-social-grid">
-        <button type="button" class="social-button" aria-label="Continuar con Google">
-            <svg viewBox="0 0 48 48" class="h-5 w-5" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.659 29.351 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.957 3.042l5.657-5.657C34.049 6.053 29.271 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.957 3.042l5.657-5.657C34.049 6.053 29.271 4 24 4c-7.675 0-14.354 4.328-17.694 10.691z"/><path fill="#4CAF50" d="M24 44c5.205 0 9.897-1.994 13.488-5.238l-6.225-5.268C29.198 35.091 26.769 36 24 36c-5.328 0-9.616-3.317-11.288-7.946l-6.522 5.025C9.48 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.004 12.004 0 0 1-4.04 5.494l.003-.002 6.225 5.268C36.99 39.001 44 34 44 24c0-1.341-.138-2.651-.389-3.917z"/></svg>
-            <span>Google</span>
-        </button>
-        <button type="button" class="social-button" aria-label="Continuar con Microsoft">
-            <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true"><path fill="#F25022" d="M2 2h9v9H2z"/><path fill="#7FBA00" d="M13 2h9v9h-9z"/><path fill="#00A4EF" d="M2 13h9v9H2z"/><path fill="#FFB900" d="M13 13h9v9h-9z"/></svg>
-            <span>Microsoft</span>
-        </button>
-    </div>
-
     <p class="auth-card__footnote">
         ¿No tienes cuenta?
         <a href="{{ route('register') }}" class="auth-link">Regístrate aquí</a>

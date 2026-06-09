@@ -31,15 +31,6 @@
                     <h2>{{ $vehiculo->marca }} {{ $vehiculo->modelo }}</h2>
                     <p>Placa {{ $vehiculo->placa }} · {{ ucfirst($vehiculo->estado) }} · {{ ['inventario venta' => 'Inventario venta', 'parqueadero' => 'Parqueadero', 'taller' => 'Taller', 'vendido' => 'Vendido', 'reservado' => 'Reservado', '0' => 'Inventario venta', '1' => 'Parqueadero', '2' => 'Taller', '3' => 'Vendido', '4' => 'Reservado'][(string) $vehiculo->ubicacion] ?? $vehiculo->ubicacion ?? 'Sin ubicación' }}</p>
                 </article>
-
-                <article class="vehicle-tip-card">
-                    <h3>Consejo</h3>
-                    <ul>
-                        <li>Si subes una nueva foto, reemplaza la anterior.</li>
-                        <li>Revisa el estado antes de guardar.</li>
-                        <li>Ubicación y precio ayudan al inventario.</li>
-                    </ul>
-                </article>
             </aside>
         </div>
     </section>

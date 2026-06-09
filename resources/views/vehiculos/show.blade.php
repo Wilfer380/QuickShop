@@ -45,7 +45,7 @@
         <div class="vehicle-detail-grid">
             <article class="vehicle-detail-card">
                 @if ($thumb)
-                        <img src="{{ $thumb }}" alt="Foto vehículo" class="vehicle-hero-image">
+                    <img src="{{ $thumb }}" alt="Foto vehículo" class="vehicle-hero-image">
                 @else
                     <div class="vehicle-hero-placeholder">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 14h14l-1.2-4.2A2 2 0 0 0 16.9 8H7.1a2 2 0 0 0-1.9 1.8L5 14Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="8" cy="17" r="1.4" stroke="currentColor" stroke-width="1.7"/><circle cx="16" cy="17" r="1.4" stroke="currentColor" stroke-width="1.7"/></svg>

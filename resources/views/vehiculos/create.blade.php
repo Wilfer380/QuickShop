@@ -26,15 +26,6 @@
                     <h2>Vehículo en inventario</h2>
                     <p>La foto cargada se mostrará aquí cuando guardes la unidad.</p>
                 </article>
-
-                <article class="vehicle-tip-card">
-                    <h3>Importante</h3>
-                    <ul>
-                        <li>La foto es opcional, pero recomendada.</li>
-                        <li>Ubicación y precio de compra ayudan al control interno.</li>
-                        <li>Si no hay cliente, deja el selector en blanco.</li>
-                    </ul>
-                </article>
             </aside>
         </div>
     </section>
