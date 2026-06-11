@@ -9,6 +9,7 @@ use App\Models\Cliente;
 use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -75,40 +76,12 @@ class ClientesController extends Controller
             ->withMax('pagos as ultimo_pago', 'pagado_at')
             ->withMax('movimientosParqueadero as ultimo_movimiento', 'entrada_at')
             ->get();
-        $fileName = 'clientes-vehipark.csv';
+        $fileName = 'clientes-vehipark.xls';
 
         return response()->streamDownload(function () use ($clientes) {
-            $handle = fopen('php://output', 'w');
-            fwrite($handle, "\xEF\xBB\xBF");
-            fwrite($handle, "sep=;\n");
-
-            fputcsv($handle, [
-                'Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Vehículos', 'Ventas', 'Pagos', 'Parqueadero', 'Fecha de registro', 'Últimos movimientos',
-            ], ';');
-
-            foreach ($clientes as $cliente) {
-                fputcsv($handle, [
-                    trim($cliente->nombres . ' ' . ($cliente->apellidos ?? '')),
-                    $cliente->tipo_documento,
-                    $cliente->documento,
-                    $cliente->telefono ?? '',
-                    $cliente->email ?? '',
-                    $cliente->ciudad ?? '',
-                    $cliente->direccion ?? '',
-                    ucfirst((string) ($cliente->segmento ?? '')),
-                    ucfirst((string) ($cliente->estado ?? '')),
-                    (int) ($cliente->vehiculos_count ?? 0),
-                    (int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.'),
-                    (int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.'),
-                    (int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.'),
-                    optional($cliente->created_at)->format('d/m/Y'),
-                    'Venta: ' . ($cliente->ultima_compra ? \Illuminate\Support\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas') . ' | Pago: ' . ($cliente->ultimo_pago ? \Illuminate\Support\Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos') . ' | Parqueadero: ' . ($cliente->ultimo_movimiento ? \Illuminate\Support\Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos'),
-                ], ';');
-            }
-
-            fclose($handle);
+            echo $this->renderClientesExportWorkbook($clientes);
         }, $fileName, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
         ]);
     }
 
@@ -210,6 +183,178 @@ class ClientesController extends Controller
         }
 
         return [$clientesQuery, $search, $estado, $ciudad, $segmento];
+    }
+
+    private function renderClientesExportWorkbook($clientes): string
+    {
+        $generatedAt = now()->format('d/m/Y H:i');
+        $total = $clientes->count();
+
+        $rows = $clientes->map(function (Cliente $cliente): string {
+            $fullName = trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''));
+            $lastPurchase = $cliente->ultima_compra ? Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas';
+            $lastPayment = $cliente->ultimo_pago ? Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos';
+            $lastParking = $cliente->ultimo_movimiento ? Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos';
+
+            return '<tr>'
+                . '<td class="text">' . e($fullName) . '</td>'
+                . '<td class="center">' . e((string) $cliente->tipo_documento) . '</td>'
+                . '<td class="center">' . e((string) $cliente->documento) . '</td>'
+                . '<td class="text">' . e((string) ($cliente->telefono ?? '')) . '</td>'
+                . '<td class="text">' . e((string) ($cliente->email ?? '')) . '</td>'
+                . '<td class="text">' . e((string) ($cliente->ciudad ?? '')) . '</td>'
+                . '<td class="text">' . e((string) ($cliente->direccion ?? '')) . '</td>'
+                . '<td class="center">' . e(ucfirst((string) ($cliente->segmento ?? ''))) . '</td>'
+                . '<td class="center">' . e(ucfirst((string) ($cliente->estado ?? ''))) . '</td>'
+                . '<td class="center">' . e((string) (int) ($cliente->vehiculos_count ?? 0)) . '</td>'
+                . '<td class="center">' . e((int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.')) . '</td>'
+                . '<td class="center">' . e((int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.')) . '</td>'
+                . '<td class="center">' . e((int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.')) . '</td>'
+                . '<td class="center">' . e(optional($cliente->created_at)->format('d/m/Y')) . '</td>'
+                . '<td class="text">' . e('Venta: ' . $lastPurchase . ' | Pago: ' . $lastPayment . ' | Parqueadero: ' . $lastParking) . '</td>'
+                . '</tr>';
+        })->implode('');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--[if gte mso 9]>
+    <xml>
+        <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+                <x:ExcelWorksheet>
+                    <x:Name>Clientes</x:Name>
+                    <x:WorksheetOptions>
+                        <x:DisplayGridlines/>
+                    </x:WorksheetOptions>
+                </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+    </xml>
+    <![endif]-->
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #0f172a;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+        }
+        .title {
+            background: #0f766e;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: left;
+            padding: 14px 16px;
+        }
+        .subtitle {
+            background: #ecfeff;
+            color: #155e75;
+            font-size: 11px;
+            padding: 10px 16px;
+            border-bottom: 1px solid #bae6fd;
+        }
+        thead th {
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 10px 8px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+        tbody td {
+            border: 1px solid #cbd5e1;
+            font-size: 10.5px;
+            padding: 8px;
+            vertical-align: top;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .text { text-align: left; }
+        .center { text-align: center; }
+        col.name { width: 200px; }
+        col.doc-type { width: 78px; }
+        col.document { width: 110px; }
+        col.phone { width: 120px; }
+        col.email { width: 190px; }
+        col.city { width: 110px; }
+        col.address { width: 180px; }
+        col.segment { width: 90px; }
+        col.state { width: 80px; }
+        col.vehicles { width: 80px; }
+        col.sales { width: 95px; }
+        col.payments { width: 95px; }
+        col.parking { width: 105px; }
+        col.created { width: 100px; }
+        col.activity { width: 360px; }
+    </style>
+</head>
+<body>
+    <table>
+        <colgroup>
+            <col class="name">
+            <col class="doc-type">
+            <col class="document">
+            <col class="phone">
+            <col class="email">
+            <col class="city">
+            <col class="address">
+            <col class="segment">
+            <col class="state">
+            <col class="vehicles">
+            <col class="sales">
+            <col class="payments">
+            <col class="parking">
+            <col class="created">
+            <col class="activity">
+        </colgroup>
+        <thead>
+            <tr>
+                <th colspan="15" class="title">Reporte de clientes - VehiPark</th>
+            </tr>
+            <tr>
+                <th colspan="15" class="subtitle">Exportado el {$generatedAt} · Registros: {$total}</th>
+            </tr>
+            <tr>
+                <th>Nombre completo</th>
+                <th>Tipo de documento</th>
+                <th>Documento</th>
+                <th>Teléfono</th>
+                <th>Correo electrónico</th>
+                <th>Ciudad</th>
+                <th>Dirección</th>
+                <th>Segmento</th>
+                <th>Estado</th>
+                <th>Vehículos</th>
+                <th>Ventas</th>
+                <th>Pagos</th>
+                <th>Parqueadero</th>
+                <th>Fecha de registro</th>
+                <th>Últimos movimientos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {$rows}
+        </tbody>
+    </table>
+</body>
+</html>
+HTML;
     }
 
 }
