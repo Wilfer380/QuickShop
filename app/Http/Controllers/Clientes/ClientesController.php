@@ -187,10 +187,6 @@ class ClientesController extends Controller
 
     private function buildClientesWorkbookXlsx($clientes): string
     {
-        if (!class_exists(\ZipArchive::class)) {
-            throw new \RuntimeException('ZipArchive no está disponible para generar el archivo Excel.');
-        }
-
         $rows = $clientes->map(function (Cliente $cliente): array {
             $fullName = trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''));
             $lastPurchase = $cliente->ultima_compra ? Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas';
@@ -216,61 +212,16 @@ class ClientesController extends Controller
             ];
         })->values()->all();
 
-        $tmpBase = tempnam(sys_get_temp_dir(), 'vehipark_clientes_');
-        if ($tmpBase === false) {
-            throw new \RuntimeException('No se pudo crear el archivo temporal de exportación.');
-        }
-
-        @unlink($tmpBase);
-        if (!mkdir($tmpBase, 0777, true) && !is_dir($tmpBase)) {
-            throw new \RuntimeException('No se pudo preparar el directorio temporal de exportación.');
-        }
-
-        $zipPath = $tmpBase . DIRECTORY_SEPARATOR . 'clientes-vehipark.xlsx';
-
-        try {
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . '[Content_Types].xml', $this->clientesContentTypesXml());
-            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . '_rels');
-            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'docProps');
-            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl');
-            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . '_rels');
-            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'worksheets');
-
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . '_rels' . DIRECTORY_SEPARATOR . '.rels', $this->clientesRelsXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'docProps' . DIRECTORY_SEPARATOR . 'app.xml', $this->clientesAppXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'docProps' . DIRECTORY_SEPARATOR . 'core.xml', $this->clientesCoreXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'workbook.xml', $this->clientesWorkbookXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . '_rels' . DIRECTORY_SEPARATOR . 'workbook.xml.rels', $this->clientesWorkbookRelsXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'styles.xml', $this->clientesStylesXml());
-            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'worksheets' . DIRECTORY_SEPARATOR . 'sheet1.xml', $this->clientesSheetXml($rows));
-
-            $zip = new \ZipArchive();
-            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                throw new \RuntimeException('No se pudo construir el archivo XLSX.');
-            }
-
-            $files = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($tmpBase, \FilesystemIterator::SKIP_DOTS)
-            );
-
-            foreach ($files as $file) {
-                if ($file->isFile()) {
-                    $relativePath = substr($file->getPathname(), strlen($tmpBase) + 1);
-                    $zip->addFile($file->getPathname(), str_replace(DIRECTORY_SEPARATOR, '/', $relativePath));
-                }
-            }
-
-            $zip->close();
-
-            $binary = file_get_contents($zipPath);
-            if ($binary === false) {
-                throw new \RuntimeException('No se pudo leer el archivo XLSX generado.');
-            }
-
-            return $binary;
-        } finally {
-            $this->deleteDirectory($tmpBase);
-        }
+        return $this->buildZipArchive([
+            '[Content_Types].xml' => $this->clientesContentTypesXml(),
+            '_rels/.rels' => $this->clientesRelsXml(),
+            'docProps/app.xml' => $this->clientesAppXml(),
+            'docProps/core.xml' => $this->clientesCoreXml(),
+            'xl/workbook.xml' => $this->clientesWorkbookXml(),
+            'xl/_rels/workbook.xml.rels' => $this->clientesWorkbookRelsXml(),
+            'xl/styles.xml' => $this->clientesStylesXml(),
+            'xl/worksheets/sheet1.xml' => $this->clientesSheetXml($rows),
+        ]);
     }
 
     private function clientesSheetXml(array $rows): string
@@ -477,35 +428,85 @@ class ClientesController extends Controller
         return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
     }
 
-    private function ensureDirectory(string $path): void
+    private function buildZipArchive(array $files): string
     {
-        if (!is_dir($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
-            throw new \RuntimeException('No se pudo crear el directorio temporal de exportación.');
+        $data = '';
+        $centralDirectory = '';
+        $offset = 0;
+
+        foreach ($files as $name => $content) {
+            $name = str_replace('\\', '/', $name);
+            $content = (string) $content;
+            $nameLength = strlen($name);
+            $contentLength = strlen($content);
+            $crc = crc32($content);
+            if ($crc < 0) {
+                $crc += 4294967296;
+            }
+
+            $localHeader =
+                $this->zipPack32(0x04034b50) .
+                $this->zipPack16(20) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32($crc) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack16($nameLength) .
+                $this->zipPack16(0) .
+                $name .
+                $content;
+
+            $data .= $localHeader;
+
+            $centralDirectory .=
+                $this->zipPack32(0x02014b50) .
+                $this->zipPack16(20) .
+                $this->zipPack16(20) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32($crc) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack16($nameLength) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32(0) .
+                $this->zipPack32($offset) .
+                $name;
+
+            $offset += strlen($localHeader);
         }
+
+        $centralDirectoryOffset = strlen($data);
+        $data .= $centralDirectory;
+        $data .=
+            $this->zipPack32(0x06054b50) .
+            $this->zipPack16(0) .
+            $this->zipPack16(0) .
+            $this->zipPack16(count($files)) .
+            $this->zipPack16(count($files)) .
+            $this->zipPack32(strlen($centralDirectory)) .
+            $this->zipPack32($centralDirectoryOffset) .
+            $this->zipPack16(0);
+
+        return $data;
     }
 
-    private function deleteDirectory(string $directory): void
+    private function zipPack16(int $value): string
     {
-        if (!is_dir($directory)) {
-            return;
-        }
+        return pack('v', $value & 0xffff);
+    }
 
-        $items = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($items as $item) {
-            $path = $item->getPathname();
-
-            if ($item->isDir()) {
-                @rmdir($path);
-            } else {
-                @unlink($path);
-            }
-        }
-
-        @rmdir($directory);
+    private function zipPack32(int $value): string
+    {
+        return pack('V', $value & 0xffffffff);
     }
 
 }
