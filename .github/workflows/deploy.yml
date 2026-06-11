@@ -4,13 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: Branch or tag to deploy
-        required: false
-        default: main
-        type: string
 
 concurrency:
   group: deploy-prod
@@ -58,9 +51,7 @@ jobs:
     name: Deploy to VPS
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
-    env:
-      DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref_name }}
+    if: ${{ github.ref == 'refs/heads/main' }}
 
     steps:
       - name: Check deploy secrets
@@ -82,8 +73,6 @@ jobs:
       - name: Checkout code
         if: steps.secrets.outputs.configured == 'true'
         uses: actions/checkout@v4
-        with:
-          ref: ${{ env.DEPLOY_REF }}
 
       - name: Start SSH agent
         if: steps.secrets.outputs.configured == 'true'
@@ -103,6 +92,5 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PATH: ${{ secrets.VPS_PATH }}
-          DEPLOY_REF: ${{ env.DEPLOY_REF }}
         run: |
-          ssh "$VPS_USER@$VPS_HOST" "cd '$VPS_PATH' && git fetch origin '$DEPLOY_REF' && git reset --hard 'origin/$DEPLOY_REF' && composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+          ssh "$VPS_USER@$VPS_HOST" "cd '$VPS_PATH' && git fetch origin main && git reset --hard origin/main && composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
