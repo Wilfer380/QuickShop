@@ -76,12 +76,12 @@ class ClientesController extends Controller
             ->withMax('pagos as ultimo_pago', 'pagado_at')
             ->withMax('movimientosParqueadero as ultimo_movimiento', 'entrada_at')
             ->get();
-        $fileName = 'clientes-vehipark.xls';
+        $fileName = 'clientes-vehipark.xlsx';
 
         return response()->streamDownload(function () use ($clientes) {
-            echo $this->renderClientesExportWorkbook($clientes);
+            echo $this->buildClientesWorkbookXlsx($clientes);
         }, $fileName, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 
@@ -185,176 +185,327 @@ class ClientesController extends Controller
         return [$clientesQuery, $search, $estado, $ciudad, $segmento];
     }
 
-    private function renderClientesExportWorkbook($clientes): string
+    private function buildClientesWorkbookXlsx($clientes): string
     {
-        $generatedAt = now()->format('d/m/Y H:i');
-        $total = $clientes->count();
+        if (!class_exists(\ZipArchive::class)) {
+            throw new \RuntimeException('ZipArchive no está disponible para generar el archivo Excel.');
+        }
 
-        $rows = $clientes->map(function (Cliente $cliente): string {
+        $rows = $clientes->map(function (Cliente $cliente): array {
             $fullName = trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''));
             $lastPurchase = $cliente->ultima_compra ? Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas';
             $lastPayment = $cliente->ultimo_pago ? Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos';
             $lastParking = $cliente->ultimo_movimiento ? Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos';
 
-            return '<tr>'
-                . '<td class="text">' . e($fullName) . '</td>'
-                . '<td class="center">' . e((string) $cliente->tipo_documento) . '</td>'
-                . '<td class="center">' . e((string) $cliente->documento) . '</td>'
-                . '<td class="text">' . e((string) ($cliente->telefono ?? '')) . '</td>'
-                . '<td class="text">' . e((string) ($cliente->email ?? '')) . '</td>'
-                . '<td class="text">' . e((string) ($cliente->ciudad ?? '')) . '</td>'
-                . '<td class="text">' . e((string) ($cliente->direccion ?? '')) . '</td>'
-                . '<td class="center">' . e(ucfirst((string) ($cliente->segmento ?? ''))) . '</td>'
-                . '<td class="center">' . e(ucfirst((string) ($cliente->estado ?? ''))) . '</td>'
-                . '<td class="center">' . e((string) (int) ($cliente->vehiculos_count ?? 0)) . '</td>'
-                . '<td class="center">' . e((int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.')) . '</td>'
-                . '<td class="center">' . e((int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.')) . '</td>'
-                . '<td class="center">' . e((int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.')) . '</td>'
-                . '<td class="center">' . e(optional($cliente->created_at)->format('d/m/Y')) . '</td>'
-                . '<td class="text">' . e('Venta: ' . $lastPurchase . ' | Pago: ' . $lastPayment . ' | Parqueadero: ' . $lastParking) . '</td>'
-                . '</tr>';
-        })->implode('');
+            return [
+                $fullName,
+                (string) $cliente->tipo_documento,
+                (string) $cliente->documento,
+                (string) ($cliente->telefono ?? ''),
+                (string) ($cliente->email ?? ''),
+                (string) ($cliente->ciudad ?? ''),
+                (string) ($cliente->direccion ?? ''),
+                ucfirst((string) ($cliente->segmento ?? '')),
+                ucfirst((string) ($cliente->estado ?? '')),
+                (string) (int) ($cliente->vehiculos_count ?? 0),
+                (int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.'),
+                (int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.'),
+                (int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.'),
+                optional($cliente->created_at)->format('d/m/Y'),
+                'Venta: ' . $lastPurchase . ' | Pago: ' . $lastPayment . ' | Parqueadero: ' . $lastParking,
+            ];
+        })->values()->all();
 
-        return <<<HTML
-<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!--[if gte mso 9]>
-    <xml>
-        <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                    <x:Name>Clientes</x:Name>
-                    <x:WorksheetOptions>
-                        <x:DisplayGridlines/>
-                    </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #0f172a;
+        $tmpBase = tempnam(sys_get_temp_dir(), 'vehipark_clientes_');
+        if ($tmpBase === false) {
+            throw new \RuntimeException('No se pudo crear el archivo temporal de exportación.');
         }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            table-layout: fixed;
+
+        @unlink($tmpBase);
+        if (!mkdir($tmpBase, 0777, true) && !is_dir($tmpBase)) {
+            throw new \RuntimeException('No se pudo preparar el directorio temporal de exportación.');
         }
-        .title {
-            background: #0f766e;
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 700;
-            text-align: left;
-            padding: 14px 16px;
+
+        $zipPath = $tmpBase . DIRECTORY_SEPARATOR . 'clientes-vehipark.xlsx';
+
+        try {
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . '[Content_Types].xml', $this->clientesContentTypesXml());
+            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . '_rels');
+            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'docProps');
+            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl');
+            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . '_rels');
+            $this->ensureDirectory($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'worksheets');
+
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . '_rels' . DIRECTORY_SEPARATOR . '.rels', $this->clientesRelsXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'docProps' . DIRECTORY_SEPARATOR . 'app.xml', $this->clientesAppXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'docProps' . DIRECTORY_SEPARATOR . 'core.xml', $this->clientesCoreXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'workbook.xml', $this->clientesWorkbookXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . '_rels' . DIRECTORY_SEPARATOR . 'workbook.xml.rels', $this->clientesWorkbookRelsXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'styles.xml', $this->clientesStylesXml());
+            file_put_contents($tmpBase . DIRECTORY_SEPARATOR . 'xl' . DIRECTORY_SEPARATOR . 'worksheets' . DIRECTORY_SEPARATOR . 'sheet1.xml', $this->clientesSheetXml($rows));
+
+            $zip = new \ZipArchive();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                throw new \RuntimeException('No se pudo construir el archivo XLSX.');
+            }
+
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($tmpBase, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($files as $file) {
+                if ($file->isFile()) {
+                    $relativePath = substr($file->getPathname(), strlen($tmpBase) + 1);
+                    $zip->addFile($file->getPathname(), str_replace(DIRECTORY_SEPARATOR, '/', $relativePath));
+                }
+            }
+
+            $zip->close();
+
+            $binary = file_get_contents($zipPath);
+            if ($binary === false) {
+                throw new \RuntimeException('No se pudo leer el archivo XLSX generado.');
+            }
+
+            return $binary;
+        } finally {
+            $this->deleteDirectory($tmpBase);
         }
-        .subtitle {
-            background: #ecfeff;
-            color: #155e75;
-            font-size: 11px;
-            padding: 10px 16px;
-            border-bottom: 1px solid #bae6fd;
+    }
+
+    private function clientesSheetXml(array $rows): string
+    {
+        $title = $this->xmlEscape('Reporte de clientes - VehiPark');
+        $subtitle = $this->xmlEscape('Exportado el ' . now()->format('d/m/Y H:i') . ' · Registros: ' . count($rows));
+
+        $headerLabels = [
+            'Nombre completo',
+            'Tipo de documento',
+            'Documento',
+            'Teléfono',
+            'Correo electrónico',
+            'Ciudad',
+            'Dirección',
+            'Segmento',
+            'Estado',
+            'Vehículos',
+            'Ventas',
+            'Pagos',
+            'Parqueadero',
+            'Fecha de registro',
+            'Últimos movimientos',
+        ];
+
+        $sheetRows = [];
+        $sheetRows[] = $this->xlsxRow(1, [$title], 1, 1, false);
+        $sheetRows[] = $this->xlsxRow(2, [$subtitle], 2, 2, false);
+        $sheetRows[] = $this->xlsxRow(3, $headerLabels, 3, 3, false);
+
+        foreach ($rows as $index => $row) {
+            $rowNumber = $index + 4;
+            $isOdd = $index % 2 === 1;
+            $sheetRows[] = $this->xlsxRow($rowNumber, $row, $isOdd ? 5 : 4, $isOdd ? 7 : 6, $isOdd ? 9 : 8);
         }
-        thead th {
-            background: #1e293b;
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 10px 8px;
-            border: 1px solid #334155;
-            text-align: center;
+
+        $lastRow = count($rows) + 3;
+        $autoFilter = $lastRow >= 3 ? '<autoFilter ref="A3:O' . $lastRow . '"/>' : '';
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+            . '<sheetFormatPr defaultRowHeight="18"/>'
+            . '<cols>'
+            . '<col min="1" max="1" width="24" customWidth="1"/>'
+            . '<col min="2" max="2" width="14" customWidth="1"/>'
+            . '<col min="3" max="3" width="14" customWidth="1"/>'
+            . '<col min="4" max="4" width="16" customWidth="1"/>'
+            . '<col min="5" max="5" width="28" customWidth="1"/>'
+            . '<col min="6" max="6" width="16" customWidth="1"/>'
+            . '<col min="7" max="7" width="24" customWidth="1"/>'
+            . '<col min="8" max="8" width="14" customWidth="1"/>'
+            . '<col min="9" max="9" width="14" customWidth="1"/>'
+            . '<col min="10" max="10" width="11" customWidth="1"/>'
+            . '<col min="11" max="11" width="14" customWidth="1"/>'
+            . '<col min="12" max="12" width="14" customWidth="1"/>'
+            . '<col min="13" max="13" width="14" customWidth="1"/>'
+            . '<col min="14" max="14" width="14" customWidth="1"/>'
+            . '<col min="15" max="15" width="42" customWidth="1"/>'
+            . '</cols>'
+            . '<sheetData>' . implode('', $sheetRows) . '</sheetData>'
+            . $autoFilter
+            . '<mergeCells count="2"><mergeCell ref="A1:O1"/><mergeCell ref="A2:O2"/></mergeCells>'
+            . '<pageMargins left="0.3" right="0.3" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>'
+            . '</worksheet>';
+    }
+
+    private function clientesWorkbookXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheets><sheet name="Clientes" sheetId="1" r:id="rId1"/></sheets>'
+            . '</workbook>';
+    }
+
+    private function clientesWorkbookRelsXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . '</Relationships>';
+    }
+
+    private function clientesRelsXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>'
+            . '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>'
+            . '</Relationships>';
+    }
+
+    private function clientesContentTypesXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            . '<Default Extension="xml" ContentType="application/xml"/>'
+            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            . '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
+            . '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>'
+            . '</Types>';
+    }
+
+    private function clientesAppXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" '
+            . 'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">'
+            . '<Application>VehiPark</Application>'
+            . '</Properties>';
+    }
+
+    private function clientesCoreXml(): string
+    {
+        $createdAt = now()->toAtomString();
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" '
+            . 'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            . 'xmlns:dcterms="http://purl.org/dc/terms/" '
+            . 'xmlns:dcmitype="http://purl.org/dc/dcmitype/" '
+            . 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            . '<dc:title>Reporte de clientes - VehiPark</dc:title>'
+            . '<dc:creator>VehiPark</dc:creator>'
+            . '<cp:lastModifiedBy>VehiPark</cp:lastModifiedBy>'
+            . '<dcterms:created xsi:type="dcterms:W3CDTF">' . $createdAt . '</dcterms:created>'
+            . '<dcterms:modified xsi:type="dcterms:W3CDTF">' . $createdAt . '</dcterms:modified>'
+            . '</cp:coreProperties>';
+    }
+
+    private function clientesStylesXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<fonts count="4">'
+            . '<font><sz val="11"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="14"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'
+            . '<font><i/><sz val="10"/><color rgb="FF155E75"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'
+            . '</fonts>'
+            . '<fills count="5">'
+            . '<fill><patternFill patternType="none"/></fill>'
+            . '<fill><patternFill patternType="gray125"/></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF0F766E"/><bgColor indexed="64"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF1E293B"/><bgColor indexed="64"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill>'
+            . '</fills>'
+            . '<borders count="1">'
+            . '<border><left style="thin"><color rgb="FFD1D5DB"/></left><right style="thin"><color rgb="FFD1D5DB"/></right><top style="thin"><color rgb="FFD1D5DB"/></top><bottom style="thin"><color rgb="FFD1D5DB"/></bottom><diagonal/></border>'
+            . '</borders>'
+            . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            . '<cellXfs count="10">'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+            . '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="2" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '</cellXfs>'
+            . '</styleSheet>';
+    }
+
+    private function xlsxRow(int $rowNumber, array $values, int $styleId, int $centerStyleId, int $wrapStyleId): string
+    {
+        $xml = '<row r="' . $rowNumber . '" spans="1:15">';
+
+        foreach ($values as $index => $value) {
+            $column = $this->xlsxColumn($index + 1);
+            $cellRef = $column . $rowNumber;
+            $isWrapColumn = $index === 14;
+            $cellStyleId = $isWrapColumn ? $wrapStyleId : ($index >= 9 && $index <= 13 ? $centerStyleId : $styleId);
+            $xml .= '<c r="' . $cellRef . '" t="inlineStr" s="' . $cellStyleId . '"><is><t xml:space="preserve">' . $this->xmlEscape((string) $value) . '</t></is></c>';
         }
-        tbody td {
-            border: 1px solid #cbd5e1;
-            font-size: 10.5px;
-            padding: 8px;
-            vertical-align: top;
-            word-wrap: break-word;
-            white-space: normal;
+
+        return $xml . '</row>';
+    }
+
+    private function xlsxColumn(int $index): string
+    {
+        $column = '';
+
+        while ($index > 0) {
+            $index--;
+            $column = chr(65 + ($index % 26)) . $column;
+            $index = intdiv($index, 26);
         }
-        tbody tr:nth-child(even) {
-            background: #f8fafc;
+
+        return $column;
+    }
+
+    private function xmlEscape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    }
+
+    private function ensureDirectory(string $path): void
+    {
+        if (!is_dir($path) && !mkdir($path, 0777, true) && !is_dir($path)) {
+            throw new \RuntimeException('No se pudo crear el directorio temporal de exportación.');
         }
-        .text { text-align: left; }
-        .center { text-align: center; }
-        col.name { width: 200px; }
-        col.doc-type { width: 78px; }
-        col.document { width: 110px; }
-        col.phone { width: 120px; }
-        col.email { width: 190px; }
-        col.city { width: 110px; }
-        col.address { width: 180px; }
-        col.segment { width: 90px; }
-        col.state { width: 80px; }
-        col.vehicles { width: 80px; }
-        col.sales { width: 95px; }
-        col.payments { width: 95px; }
-        col.parking { width: 105px; }
-        col.created { width: 100px; }
-        col.activity { width: 360px; }
-    </style>
-</head>
-<body>
-    <table>
-        <colgroup>
-            <col class="name">
-            <col class="doc-type">
-            <col class="document">
-            <col class="phone">
-            <col class="email">
-            <col class="city">
-            <col class="address">
-            <col class="segment">
-            <col class="state">
-            <col class="vehicles">
-            <col class="sales">
-            <col class="payments">
-            <col class="parking">
-            <col class="created">
-            <col class="activity">
-        </colgroup>
-        <thead>
-            <tr>
-                <th colspan="15" class="title">Reporte de clientes - VehiPark</th>
-            </tr>
-            <tr>
-                <th colspan="15" class="subtitle">Exportado el {$generatedAt} · Registros: {$total}</th>
-            </tr>
-            <tr>
-                <th>Nombre completo</th>
-                <th>Tipo de documento</th>
-                <th>Documento</th>
-                <th>Teléfono</th>
-                <th>Correo electrónico</th>
-                <th>Ciudad</th>
-                <th>Dirección</th>
-                <th>Segmento</th>
-                <th>Estado</th>
-                <th>Vehículos</th>
-                <th>Ventas</th>
-                <th>Pagos</th>
-                <th>Parqueadero</th>
-                <th>Fecha de registro</th>
-                <th>Últimos movimientos</th>
-            </tr>
-        </thead>
-        <tbody>
-            {$rows}
-        </tbody>
-    </table>
-</body>
-</html>
-HTML;
+    }
+
+    private function deleteDirectory(string $directory): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            $path = $item->getPathname();
+
+            if ($item->isDir()) {
+                @rmdir($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($directory);
     }
 
 }
