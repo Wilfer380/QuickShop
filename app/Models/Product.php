@@ -18,34 +18,24 @@ class Product extends Model
         'stock',
     ];
 
-    // Relación con usuario (un producto pertenece a un usuario)
+    protected $casts = [
+        'price' => 'float',
+        'stock' => 'integer',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relación con categoría (un producto pertenece a una categoría)
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    // Relación con reseñas (un producto puede tener muchas reseñas)
-    public function reviews()
-    {
-        return $this->hasMany(ProductReview::class);
-    }
-
-    // Relación con imágenes (un producto puede tener muchas imágenes)
-    // En el modelo Product
     public function productImages()
-{
-    return $this->hasMany(ProductImage::class);
-}
-
-    // Relación con elementos de órdenes (un producto puede estar en muchos elementos de órdenes)
-    public function orderItems()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(ProductImage::class);
     }
+
 }

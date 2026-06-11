@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'VehiPark') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -13,24 +13,61 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+        @if (request()->routeIs('dashboard') || request()->routeIs('clientes.*') || request()->routeIs('vehiculos.*') || request()->routeIs('ventas.*') || request()->routeIs('parqueadero.*') || request()->routeIs('tarifas.*') || request()->routeIs('pagos.*') || request()->routeIs('reportes.*') || request()->routeIs('configuracion.*') || request()->routeIs('cupos.*') || request()->routeIs('profile.*'))
+            <div x-data="{ sidebarOpen: window.innerWidth >= 1024 }" class="dashboard-shell">
+                <x-sidebar />
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+                <div class="main-content" x-bind:class="sidebarOpen ? '' : 'is-collapsed'">
+                    <x-topbar />
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
+                    <main>
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
+        @else
+            <div class="min-h-screen bg-slate-950 text-slate-100 lg:flex">
+                @include('layouts.navigation')
+
+                <div class="min-w-0 flex-1 lg:pl-72">
+                    @isset($header)
+                        <header class="border-b border-white/10 bg-slate-900/80 shadow-2xl shadow-black/30">
+                            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
+
+                    <main>
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
+        @endif
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const moneyInputs = document.querySelectorAll('[data-money-input="true"]');
+                const formatMoney = (input) => {
+                    const raw = (input.value || '').trim();
+                    if (raw === '') return;
+                    if (!/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\.\d{3})*)$/.test(raw)) return;
+
+                    const digits = raw.replace(/\./g, '');
+                    input.value = new Intl.NumberFormat('es-CO').format(Number(digits));
+                };
+
+                moneyInputs.forEach((input) => {
+                    formatMoney(input);
+                    input.addEventListener('input', () => formatMoney(input));
+                    input.addEventListener('blur', () => formatMoney(input));
+                });
+            });
+        </script>
+
+        @stack('scripts')
     </body>
 </html>

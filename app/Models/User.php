@@ -20,7 +20,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
+        'phone',
+        'documento',
         'password',
+        'role',
+        'status',
     ];
 
     /**
@@ -46,23 +51,34 @@ class User extends Authenticatable
         ];
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Rol::class, 'role_user', 'user_id', 'role_id')->withTimestamps();
+    }
 
-      // Relación con productos (un usuario puede tener muchos productos)
-      public function products()
-      {
-          return $this->hasMany(Product::class);
-      }
-  
-      // Relación con órdenes (un usuario puede tener muchas órdenes)
-      public function orders()
-      {
-          return $this->hasMany(Order::class);
-      }
-  
-      // Relación con direcciones de envío (un usuario puede tener muchas direcciones)
-      public function shippingAddresses()
-      {
-          return $this->hasMany(ShippingAddress::class);
-      }
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role || $this->roles()->where('name', $role)->exists();
+    }
+
+    public function ventas()
+    {
+        return $this->hasMany(Venta::class, 'vendedor_id');
+    }
+
+    public function movimientosParqueadero()
+    {
+        return $this->hasMany(MovimientoParqueadero::class, 'registrado_por_id');
+    }
+
+    public function pagosRecibidos()
+    {
+        return $this->hasMany(Pago::class, 'recibido_por_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 
 }

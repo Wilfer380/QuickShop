@@ -7,43 +7,59 @@ use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        DB::table('categories')->insert([
-            ['name' => 'Tecnología', 'description' => 'Dispositivos, gadgets y software.'],
-            ['name' => 'Ropa', 'description' => 'Prendas de vestir, accesorios de moda y calzado.'],
-            ['name' => 'Deportes', 'description' => 'Equipamiento deportivo, ropa y accesorios para el deporte.'],
-            ['name' => 'Hogar y Decoración', 'description' => 'Muebles, decoración del hogar y productos esenciales para tu espacio.'],
-            ['name' => 'Belleza', 'description' => 'Cosméticos, cuidado de la piel y productos de bienestar.'],
-            ['name' => 'Libros', 'description' => 'Libros de ficción, no ficción y educativos.'],
-            ['name' => 'Juguetes', 'description' => 'Juguetes y juegos para niños de todas las edades.'],
-            ['name' => 'Alimentos', 'description' => 'Comida, bebidas y artículos para el hogar.'],
-            ['name' => 'Automotriz', 'description' => 'Piezas de automóvil, accesorios y herramientas.'],
-            ['name' => 'Salud y Bienestar', 'description' => 'Equipos de fitness, suplementos alimenticios y productos de bienestar.'],
-            ['name' => 'Bebé y Niños', 'description' => 'Productos para el cuidado del bebé, ropa y juguetes para niños.'],
-            ['name' => 'Electrónica', 'description' => 'Electrodomésticos, teléfonos móviles, computadoras y accesorios.'],
-            ['name' => 'Joyería y Relojes', 'description' => 'Anillos, collares, pulseras y relojes.'],
-            ['name' => 'Música y Películas', 'description' => 'CDs, vinilos, DVDs, Blu-rays y servicios de streaming.'],
-            ['name' => 'Alimentos y Bebidas', 'description' => 'Comida gourmet, snacks, bebidas y más.'],
-            ['name' => 'Material de Oficina', 'description' => 'Mobiliario de oficina, papelería y suministros.'],
-            ['name' => 'Mascotas', 'description' => 'Alimentos para mascotas, juguetes y accesorios para todo tipo de animales.'],
-            ['name' => 'Papelería', 'description' => 'Cuadernos, bolígrafos, papeles y otros artículos de papelería.'],
-            ['name' => 'Jardín y Exterior', 'description' => 'Herramientas de jardinería, muebles de exterior y accesorios para patio.'],
-            ['name' => 'Instrumentos Musicales', 'description' => 'Guitarras, teclados, baterías y otros instrumentos musicales.'],
-            ['name' => 'Viajes y Equipaje', 'description' => 'Maletas, accesorios de viaje y artículos esenciales para el equipaje.'],
-            ['name' => 'Arte y Manualidades', 'description' => 'Materiales de arte, manualidades y kits de bricolaje.'],
-            ['name' => 'Vintage', 'description' => 'Artículos coleccionables, ropa vintage y muebles retro.'],
-            ['name' => 'Muebles', 'description' => 'Muebles para la sala, el dormitorio, la cocina y la oficina.'],
-            ['name' => 'Deportes al Aire Libre', 'description' => 'Equipo para ciclismo, senderismo, camping y pesca.'],
-            ['name' => 'Lujo', 'description' => 'Productos de alta gama, marcas exclusivas y artículos de lujo.'],
-            ['name' => 'Regalos y Ocasiones', 'description' => 'Artículos para regalar en cumpleaños, aniversarios y ocasiones especiales.'],
-            ['name' => 'Cervezas Artesanales y Licores', 'description' => 'Cervezas artesanales, vinos y licores de todo el mundo.'],
-            ['name' => 'Coleccionables', 'description' => 'Cómics, artículos raros y coleccionables de diversas categorías.'],
-        ]);
+        $categories = [
+            ['name' => 'Autos', 'description' => 'Vehiculos livianos para administracion diaria.', 'sort_order' => 10],
+            ['name' => 'Camionetas', 'description' => 'Unidades utilitarias, SUV y pickups.', 'sort_order' => 20],
+            ['name' => 'Motos', 'description' => 'Motocicletas y movilidad de baja ocupacion.', 'sort_order' => 30],
+            ['name' => 'Cupos operativos', 'description' => 'Zonas internas y espacios administrados.', 'sort_order' => 40],
+            ['name' => 'Servicios', 'description' => 'Servicios asociados a parqueadero y operacion.', 'sort_order' => 50],
+        ];
+
+        $subcategories = [
+            ['parent' => 'Autos', 'name' => 'Sedan', 'description' => 'Autos sedan de uso ejecutivo.', 'sort_order' => 10],
+            ['parent' => 'Autos', 'name' => 'Hatchback', 'description' => 'Autos compactos para rotacion urbana.', 'sort_order' => 20],
+            ['parent' => 'Camionetas', 'name' => 'SUV', 'description' => 'Camionetas SUV para flota mixta.', 'sort_order' => 10],
+            ['parent' => 'Camionetas', 'name' => 'Pickup', 'description' => 'Pickups y unidades de carga liviana.', 'sort_order' => 20],
+            ['parent' => 'Motos', 'name' => 'Urbana', 'description' => 'Motos para desplazamiento urbano.', 'sort_order' => 10],
+            ['parent' => 'Cupos operativos', 'name' => 'Cubierto', 'description' => 'Cupos cubiertos para asignacion interna.', 'sort_order' => 10],
+            ['parent' => 'Cupos operativos', 'name' => 'Descubierto', 'description' => 'Cupos descubiertos para rotacion diaria.', 'sort_order' => 20],
+            ['parent' => 'Servicios', 'name' => 'Lavado', 'description' => 'Servicio de lavado y alistamiento.', 'sort_order' => 10],
+            ['parent' => 'Servicios', 'name' => 'Mantenimiento', 'description' => 'Mantenimiento preventivo y operativo.', 'sort_order' => 20],
+        ];
+
+        foreach ($categories as $category) {
+            DB::table('categories')->updateOrInsert(
+                ['name' => $category['name']],
+                [
+                    'description' => $category['description'],
+                    'sort_order' => $category['sort_order'],
+                    'parent_id' => null,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
+
+        foreach ($subcategories as $subcategory) {
+            $parentId = DB::table('categories')
+                ->where('name', $subcategory['parent'])
+                ->value('id');
+
+            if (! $parentId) {
+                continue;
+            }
+
+            DB::table('categories')->updateOrInsert(
+                ['name' => $subcategory['name'], 'parent_id' => $parentId],
+                [
+                    'description' => $subcategory['description'],
+                    'sort_order' => $subcategory['sort_order'],
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
     }
 }
