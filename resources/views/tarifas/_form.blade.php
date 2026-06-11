@@ -1,7 +1,21 @@
 @csrf
+@php
+    $formatMoneyInput = static function ($value) {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $raw = trim((string) $value);
+        if (!preg_match('/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\.\d{3})*)$/', $raw)) {
+            return $raw;
+        }
+
+        return number_format((int) str_replace('.', '', $raw), 0, ',', '.');
+    };
+@endphp
 <div class="crud-grid">
     <label><span>Nombre</span><input type="text" name="nombre" value="{{ old('nombre', $tarifa->nombre) }}" required>@error('nombre') <div class="crud-error">{{ $message }}</div> @enderror</label>
-    <label><span>Valor</span><input type="number" name="valor" min="0.01" step="0.01" value="{{ old('valor', $tarifa->valor) }}" required>@error('valor') <div class="crud-error">{{ $message }}</div> @enderror</label>
+    <label><span>Valor</span><input type="text" name="valor" inputmode="numeric" autocomplete="off" placeholder="5.000" data-money-input="true" value="{{ $formatMoneyInput(old('valor', $tarifa->valor)) }}" required>@error('valor') <div class="crud-error">{{ $message }}</div> @enderror</label>
 </div>
 <div class="crud-grid">
     <label><span>Tipo vehiculo</span><select name="tipo_vehiculo" required>@foreach ($tiposVehiculo as $tipoVehiculo)<option value="{{ $tipoVehiculo }}" @selected(old('tipo_vehiculo', $tarifa->tipo_vehiculo) === $tipoVehiculo)>{{ ucfirst($tipoVehiculo) }}</option>@endforeach</select>@error('tipo_vehiculo') <div class="crud-error">{{ $message }}</div> @enderror</label>

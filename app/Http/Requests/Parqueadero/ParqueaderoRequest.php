@@ -2,10 +2,18 @@
 
 namespace App\Http\Requests\Parqueadero;
 
+use App\Support\Concerns\NormalizesMoneyInput;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ParqueaderoRequest extends FormRequest
 {
+    use NormalizesMoneyInput;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeMoneyFields(['pago_salida']);
+    }
+
     public function authorize(): bool
     {
         return true;

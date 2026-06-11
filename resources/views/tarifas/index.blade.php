@@ -13,7 +13,7 @@
                         <span><strong>{{ $tarifa->nombre }}</strong><small>{{ $tarifa->activa ? 'Activa' : 'Inactiva' }}</small></span>
                         <span>{{ $tarifa->tipo_vehiculo }}</span>
                         <span>{{ $tarifa->tipo_cobro }}</span>
-                        <span>${{ number_format((float) $tarifa->valor, 2) }}</span>
+                        <span>${{ number_format((float) $tarifa->valor, 0, ',', '.') }}</span>
                         <span class="crud-stack"><a class="crud-link" href="{{ route('tarifas.show', $tarifa) }}">Ver</a><a class="crud-link" href="{{ route('tarifas.edit', $tarifa) }}">Editar</a><form class="crud-inline-form" action="{{ route('tarifas.destroy', $tarifa) }}" method="POST" onsubmit="return confirm('Seguro que deseas eliminar esta tarifa?')">@csrf @method('delete')<button class="crud-danger" type="submit">Eliminar</button></form></span>
                     </div>
                 @empty

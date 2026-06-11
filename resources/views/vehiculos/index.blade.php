@@ -144,7 +144,7 @@
                             @php
                                 $tipoLabel = $tipoLabels[$vehiculo->tipo] ?? ucfirst((string) $vehiculo->tipo);
                                 $estadoClass = $stateBadges[$vehiculo->estado] ?? 'badge-blue';
-                                $thumb = $vehiculo->imagen ? route('vehiculos.imagen', $vehiculo) : null;
+                                $thumb = $vehiculo->imagen ? route('vehiculos.imagen', ['vehiculo' => $vehiculo, 'v' => optional($vehiculo->updated_at)->timestamp]) : null;
                             @endphp
                             <tr>
                                 <td>

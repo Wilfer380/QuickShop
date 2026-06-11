@@ -9,25 +9,36 @@ class ParkingSpotSeeder extends Seeder
 {
     public function run(): void
     {
-        $spots = [
-            ['codigo' => 'A-01', 'zona' => 'A', 'tipo_vehiculo' => 'carro'],
-            ['codigo' => 'A-02', 'zona' => 'A', 'tipo_vehiculo' => 'carro'],
-            ['codigo' => 'A-03', 'zona' => 'A', 'tipo_vehiculo' => 'carro'],
-            ['codigo' => 'M-01', 'zona' => 'Motos', 'tipo_vehiculo' => 'moto'],
-            ['codigo' => 'M-02', 'zona' => 'Motos', 'tipo_vehiculo' => 'moto'],
-            ['codigo' => 'P-01', 'zona' => 'Pickup', 'tipo_vehiculo' => 'pickup'],
-        ];
+        $spots = [];
+
+        foreach (['A', 'B', 'C'] as $zona) {
+            foreach (range(1, 10) as $numero) {
+                $codigo = sprintf('%s%02d', $zona, $numero);
+                $tipoVehiculo = match ($zona) {
+                    'A' => in_array($numero, [7], true) ? 'moto' : 'carro',
+                    'B' => in_array($numero, [1, 2, 5, 9], true) ? 'camioneta' : 'carro',
+                    default => in_array($numero, [3, 7], true) ? 'moto' : 'carro',
+                };
+
+                $spots[] = [
+                    'codigo' => $codigo,
+                    'zona' => $zona,
+                    'tipo_vehiculo' => $tipoVehiculo === 'mantenimiento' ? 'carro' : $tipoVehiculo,
+                    'estado' => 'disponible',
+                ];
+            }
+        }
 
         foreach ($spots as $spot) {
-            CupoParqueadero::query()->updateOrCreate(
-                ['codigo' => $spot['codigo']],
-                [
-                    'zona' => $spot['zona'],
-                    'tipo_vehiculo' => $spot['tipo_vehiculo'],
-                    'estado' => 'disponible',
-                    'observaciones' => null,
-                ]
-            );
+                CupoParqueadero::query()->updateOrCreate(
+                    ['codigo' => $spot['codigo']],
+                    [
+                        'zona' => $spot['zona'],
+                        'tipo_vehiculo' => $spot['tipo_vehiculo'],
+                        'estado' => $spot['estado'],
+                        'observaciones' => null,
+                    ]
+                );
         }
     }
 }

@@ -16,7 +16,7 @@
         @stack('styles')
     </head>
     <body class="font-sans antialiased">
-        @if (request()->routeIs('dashboard') || request()->routeIs('clientes.*') || request()->routeIs('vehiculos.*') || request()->routeIs('profile.*'))
+        @if (request()->routeIs('dashboard') || request()->routeIs('clientes.*') || request()->routeIs('vehiculos.*') || request()->routeIs('ventas.*') || request()->routeIs('parqueadero.*') || request()->routeIs('tarifas.*') || request()->routeIs('pagos.*') || request()->routeIs('reportes.*') || request()->routeIs('configuracion.*') || request()->routeIs('cupos.*') || request()->routeIs('profile.*'))
             <div x-data="{ sidebarOpen: window.innerWidth >= 1024 }" class="dashboard-shell">
                 <x-sidebar />
 
@@ -47,6 +47,26 @@
                 </div>
             </div>
         @endif
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const moneyInputs = document.querySelectorAll('[data-money-input="true"]');
+                const formatMoney = (input) => {
+                    const raw = (input.value || '').trim();
+                    if (raw === '') return;
+                    if (!/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\.\d{3})*)$/.test(raw)) return;
+
+                    const digits = raw.replace(/\./g, '');
+                    input.value = new Intl.NumberFormat('es-CO').format(Number(digits));
+                };
+
+                moneyInputs.forEach((input) => {
+                    formatMoney(input);
+                    input.addEventListener('input', () => formatMoney(input));
+                    input.addEventListener('blur', () => formatMoney(input));
+                });
+            });
+        </script>
 
         @stack('scripts')
     </body>

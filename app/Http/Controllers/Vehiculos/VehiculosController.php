@@ -32,7 +32,7 @@ class VehiculosController extends Controller
 
         $stats = [
             ['label' => 'Vehículos totales', 'value' => Vehiculo::count(), 'trend' => '15% vs. mes anterior', 'tone' => 'blue', 'icon' => 'car'],
-            ['label' => 'Disponibles para venta', 'value' => Vehiculo::where('estado', 'disponible')->count(), 'trend' => '12% vs. mes anterior', 'tone' => 'green', 'icon' => 'tag'],
+            ['label' => 'Disponibles para venta', 'value' => Vehiculo::whereNotIn('estado', ['vendido', 'inactivo'])->count(), 'trend' => '12% vs. mes anterior', 'tone' => 'green', 'icon' => 'tag'],
             ['label' => 'Vehículos vendidos', 'value' => Vehiculo::where('estado', 'vendido')->count(), 'trend' => '18% vs. mes anterior', 'tone' => 'purple', 'icon' => 'cart'],
             ['label' => 'En parqueadero', 'value' => Vehiculo::whereIn('ubicacion', ['parqueadero', '1', 1])->count(), 'trend' => '8% vs. mes anterior', 'tone' => 'orange', 'icon' => 'parking'],
             ['label' => 'Valor inventario', 'value' => '$' . number_format((float) Vehiculo::whereIn('estado', ['disponible', 'reservado', 'parqueado', 'mantenimiento'])->sum('precio_venta'), 0, ',', '.'), 'trend' => '22% vs. mes anterior', 'tone' => 'teal', 'icon' => 'money'],
@@ -81,7 +81,8 @@ class VehiculosController extends Controller
         abort_unless($vehiculo->imagen && Storage::disk('public')->exists($vehiculo->imagen), 404);
 
         return response()->file(Storage::disk('public')->path($vehiculo->imagen), [
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
         ]);
     }
 

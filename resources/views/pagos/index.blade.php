@@ -15,7 +15,7 @@
                 <div class="crud-row crud-row--head"><span>Pago</span><span>Concepto</span><span>Cliente</span><span>Estado</span><span>Acciones</span></div>
                 @forelse ($pagos as $pago)
                     <div class="crud-row">
-                        <span><strong>${{ number_format((float) $pago->valor, 2) }}</strong><small>{{ $pago->pagado_at?->format('d/m/Y H:i') }}</small></span>
+                        <span><strong>${{ number_format((float) $pago->valor, 0, ',', '.') }}</strong><small>{{ $pago->pagado_at?->format('d/m/Y H:i') }}</small></span>
                         <span>{{ ucfirst($pago->concepto) }} / {{ $pago->metodo_pago }}</span>
                         <span>{{ $pago->cliente?->nombres ?? 'Sin cliente' }}</span>
                         <span>{{ ucfirst($pago->estado) }}</span>

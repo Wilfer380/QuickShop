@@ -2,11 +2,19 @@
 
 namespace App\Http\Requests\Vehiculos;
 
+use App\Support\Concerns\NormalizesMoneyInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateVehiculoRequest extends FormRequest
 {
+    use NormalizesMoneyInput;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeMoneyFields(['precio_compra', 'precio_venta']);
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -28,10 +36,11 @@ class UpdateVehiculoRequest extends FormRequest
             'ubicacion' => ['nullable', 'string', Rule::in(['inventario venta', 'parqueadero', 'taller', 'vendido', 'reservado'])],
             'vin' => ['nullable', 'string', 'max:255', Rule::unique('vehiculos', 'vin')->ignore($vehiculoId)],
             'kilometraje' => ['nullable', 'integer', 'min:0'],
-            'precio_compra' => ['nullable', 'numeric', 'min:0'],
-            'precio_venta' => ['nullable', 'numeric', 'min:0'],
+            'precio_compra' => ['nullable', 'integer', 'min:0'],
+            'precio_venta' => ['nullable', 'integer', 'min:0'],
             'estado' => ['required', 'string', Rule::in(['disponible', 'vendido', 'reservado', 'mantenimiento', 'parqueado', 'inactivo'])],
             'observaciones' => ['nullable', 'string'],
         ];
     }
+
 }

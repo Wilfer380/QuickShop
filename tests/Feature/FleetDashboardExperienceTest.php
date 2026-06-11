@@ -7,9 +7,9 @@ it('renders the login and register experiences with distinct copy', function () 
     $this->get('/login')
         ->assertOk()
         ->assertSee('Iniciar sesión', false)
-        ->assertSee('Sistema de Venta de Vehículos y Gestión de Parqueadero', false)
-        ->assertSee('Google', false)
-        ->assertSee('Microsoft', false);
+        ->assertSee('Bienvenido, inicia sesión para continuar', false)
+        ->assertSee('Recordarme', false)
+        ->assertSee('¿Olvidaste tu contraseña?', false);
 
     $this->get('/register')
         ->assertOk()
@@ -25,8 +25,10 @@ it('shows the internal dashboard hero and quick links', function () {
     $this->actingAs($employee)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Panel principal VehiPark', false)
-        ->assertSee('Operación diaria', false)
+        ->assertSee('Dashboard', false)
+        ->assertSee('Resumen general del negocio', false)
+        ->assertSee('VehiPark Control', false)
+        ->assertSee('Panel de administracion de flota', false)
         ->assertSee(route('vehiculos.index'), false)
         ->assertSee(route('parqueadero.index'), false);
 });

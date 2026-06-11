@@ -1,33 +1,36 @@
 <x-app-layout>
-    <div class="crud-page">
-        <section class="crud-hero">
-            <div>
-                <span class="crud-eyebrow">Cierre comercial</span>
-                <h1>Nueva venta</h1>
-                <p>La venta se registra en transaccion, marca el vehiculo como vendido y guarda el abono inicial si existe.</p>
-            </div>
-            <a class="crud-link" href="{{ route('ventas.index') }}">Volver</a>
-        </section>
+    <x-clientes-styles />
 
-        <section class="crud-panel">
-            @if ($errors->any())<div class="crud-alert">Revisa los datos del formulario.</div>@endif
-            <form class="crud-form" method="POST" action="{{ route('ventas.store') }}">
-                @csrf
-                <div class="crud-grid">
-                    <label><span>Cliente</span><select name="cliente_id" required>@foreach ($clientes as $cliente)<option value="{{ $cliente->id }}" @selected(old('cliente_id') == $cliente->id)>{{ $cliente->nombres }} {{ $cliente->apellidos }} - {{ $cliente->documento }}</option>@endforeach</select></label>
-                    <label><span>Vehiculo disponible</span><select name="vehiculo_id" required>@foreach ($vehiculos as $vehiculo)<option value="{{ $vehiculo->id }}" @selected(old('vehiculo_id') == $vehiculo->id)>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} {{ $vehiculo->placa }} - ${{ number_format((float) $vehiculo->precio_venta, 2) }}</option>@endforeach</select></label>
-                    <label><span>Fecha venta</span><input type="date" name="fecha_venta" value="{{ old('fecha_venta', now()->toDateString()) }}" required></label>
-                    <label><span>Precio base</span><input type="number" name="precio_base" min="0" step="0.01" value="{{ old('precio_base') }}" required></label>
-                    <label><span>Descuento</span><input type="number" name="descuento" min="0" step="0.01" value="{{ old('descuento', 0) }}"></label>
-                    <label><span>Impuestos</span><input type="number" name="impuestos" min="0" step="0.01" value="{{ old('impuestos', 0) }}"></label>
-                    <label><span>Pago inicial</span><input type="number" name="pago_inicial" min="0" step="0.01" value="{{ old('pago_inicial', 0) }}"></label>
-                    <label><span>Metodo de pago</span><select name="metodo_pago"><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select></label>
-                </div>
-                <label><span>Referencia de pago</span><input type="text" name="referencia" value="{{ old('referencia') }}"></label>
-                <label><span>Notas</span><textarea name="notas" rows="4">{{ old('notas') }}</textarea></label>
-                <button class="crud-button" type="submit">Registrar venta</button>
-            </form>
-        </section>
-    </div>
-    <x-admin-crud-styles />
+    <section class="sale-form-page">
+        <div class="sale-form-header">
+            <div>
+                <h1 class="page-title">Nueva venta</h1>
+                <p class="page-subtitle">Registra el cierre, marca el vehículo como vendido y guarda el abono inicial si existe.</p>
+            </div>
+            <a href="{{ route('ventas.index') }}" class="btn-new-sale btn-secondary">Volver</a>
+        </div>
+
+        @if ($errors->any())
+            <div class="crud-alert">Revisa los datos del formulario.</div>
+        @endif
+
+        <div class="sale-form-layout">
+            <section class="sale-form-card">
+                <form class="sale-form" method="POST" action="{{ $action }}">
+                    @include('ventas.partials.fields')
+                </form>
+            </section>
+            <aside class="sale-side-card">
+                <span>Cierre comercial</span>
+                <h2>Venta segura</h2>
+                <p>La creación conserva la transacción existente: bloquea el vehículo, cambia su estado a vendido y crea el pago inicial únicamente si informás un valor mayor a cero.</p>
+            </aside>
+        </div>
+    </section>
+
+    @push('styles')
+        <style>
+            .sale-form-page{padding:24px 34px 34px;color:#F8FAFC}.sale-form-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.btn-new-sale{height:44px;padding:0 22px;border-radius:10px;background:linear-gradient(90deg,#2563EB,#7C3AED);color:#fff;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:10px;box-shadow:0 12px 26px rgba(37,99,235,.28);text-decoration:none}.btn-secondary{background:rgba(15,23,42,.78);border:1px solid rgba(148,163,184,.16);box-shadow:none}.sale-form-layout{display:grid;grid-template-columns:minmax(0,1.25fr) 360px;gap:16px;align-items:start}.sale-form-card,.sale-side-card{border-radius:14px;background:linear-gradient(180deg,rgba(30,41,59,.94),rgba(15,23,42,.96));border:1px solid rgba(148,163,184,.16);box-shadow:0 16px 36px rgba(0,0,0,.18)}.sale-form-card{padding:22px}.sale-form{display:grid;gap:16px}.sale-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.sale-grid--3{grid-template-columns:repeat(3,minmax(0,1fr))}.sale-field{display:grid;gap:8px;min-width:0}.sale-field--full{grid-column:1 / -1}.sale-field span{font-size:13px;font-weight:700;color:#E2E8F0}.sale-field input,.sale-field select,.sale-field textarea{width:100%;height:44px;border-radius:10px;background:rgba(15,23,42,.90);border:1px solid rgba(148,163,184,.18);color:#E2E8F0;padding:0 14px;font-size:13px;outline:none;box-sizing:border-box;color-scheme:dark}.sale-field textarea{height:108px;padding:12px 14px;resize:vertical}.sale-field input:focus,.sale-field select:focus,.sale-field textarea:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,.14)}.crud-error{font-size:12px;color:#F87171}.sale-actions{display:flex;gap:10px;flex-wrap:wrap}.sale-actions .btn-primary,.sale-actions .btn-secondary{height:42px;padding:0 18px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.sale-actions .btn-primary{background:linear-gradient(90deg,#2563EB,#7C3AED);border:0;color:#fff}.sale-side-card{padding:22px}.sale-side-card span{width:max-content;padding:6px 10px;border-radius:999px;background:rgba(37,99,235,.16);color:#60A5FA;font-size:12px;font-weight:700}.sale-side-card h2{margin:14px 0 8px;color:#F8FAFC;font-size:22px;font-weight:800}.sale-side-card p{color:#94A3B8;line-height:1.7}@media(max-width:1024px){.sale-form-page{padding:20px 16px 28px}.sale-form-layout,.sale-grid,.sale-grid--3{grid-template-columns:1fr}.sale-form-header{flex-direction:column;align-items:flex-start}}
+        </style>
+    @endpush
 </x-app-layout>

@@ -116,7 +116,7 @@
     .clients-table td{padding:14px 16px;color:#CBD5E1;font-size:13px;border-top:1px solid rgba(148,163,184,.10);vertical-align:middle}
     .clients-table tbody tr:hover{background:rgba(59,130,246,.05)}
     .client-info{display:flex;align-items:center;gap:12px}
-    .client-avatar{width:38px;height:38px;border-radius:999px;object-fit:cover;border:2px solid rgba(255,255,255,.12);display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff}
+    .client-avatar{width:38px;height:38px;border-radius:999px;object-fit:cover;object-position:center center;border:2px solid rgba(255,255,255,.12);display:block;flex-shrink:0;overflow:hidden;font-size:13px;font-weight:800;color:#fff;background-size:cover;background-position:center center}
     .client-name{font-size:14px;font-weight:700;color:#F8FAFC}
     .client-subtitle{font-size:12px}
     .sub-blue{color:#60A5FA}
@@ -157,6 +157,7 @@
     .client-form-field input,.client-form-field select,.client-form-field textarea{height:42px;border-radius:10px;background:rgba(15,23,42,.90);border:1px solid rgba(148,163,184,.18);color:#E2E8F0;padding:0 14px;font-size:13px}
     .client-form-field textarea{height:92px;padding:12px 14px;resize:vertical}
     .client-form-field input:focus,.client-form-field select:focus,.client-form-field textarea:focus{outline:none;border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,.14)}
+    .client-photo-preview{width:88px;height:88px;border-radius:18px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.85);object-fit:cover;object-position:center center;display:block;margin-top:8px}
     .client-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
     .btn-secondary{height:42px;padding:0 18px;border-radius:10px;background:rgba(15,23,42,.76);border:1px solid rgba(148,163,184,.16);color:#CBD5E1;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .btn-primary{height:42px;padding:0 18px;border-radius:10px;background:linear-gradient(90deg,#2563EB,#7C3AED);border:0;color:#fff;font-weight:700;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 12px 26px rgba(37,99,235,.22)}

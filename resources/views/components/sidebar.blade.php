@@ -69,14 +69,35 @@
             @endforeach
         </nav>
 
-        <div class="sidebar-footer">
-            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80" alt="Carro decorativo" class="sidebar-footer__car">
-            <div class="sidebar-footer__meta">
-                <strong>{{ auth()->user()->name ?? 'VehiPark' }}</strong>
-                <span>{{ auth()->user()->email ?? '© 2024 VehiPark S.A.S.' }}</span>
-                <p><i class="sidebar-status-dot"></i> {{ auth()->user()?->role ? ucfirst(auth()->user()->role) : 'Sistema en línea' }}</p>
+        @if (request()->routeIs('parqueadero.*'))
+            <div class="sidebar-footer">
+                <div class="sidebar-help-card">
+                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80" alt="Parqueadero" class="sidebar-footer__car">
+                    <div class="sidebar-help-card__copy">
+                        <strong>¿Necesitas ayuda?</strong>
+                        <span>Consulta el manual o contacta soporte técnico.</span>
+                        <a href="#" class="sidebar-help-card__button">Centro de ayuda</a>
+                    </div>
+                </div>
+                <div class="sidebar-footer__profile">
+                    <div class="sidebar-footer__avatar">MO</div>
+                    <div class="sidebar-footer__meta">
+                        <strong>Maicol Oliveras</strong>
+                        <span>Empleado</span>
+                        <p><i class="sidebar-status-dot"></i> En línea</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        @else
+            <div class="sidebar-footer">
+                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80" alt="Carro decorativo" class="sidebar-footer__car">
+                <div class="sidebar-footer__meta">
+                    <strong>{{ auth()->user()->name ?? 'VehiPark' }}</strong>
+                    <span>{{ auth()->user()->email ?? '© 2024 VehiPark S.A.S.' }}</span>
+                    <p><i class="sidebar-status-dot"></i> {{ auth()->user()?->role ? ucfirst(auth()->user()->role) : 'Sistema en línea' }}</p>
+                </div>
+            </div>
+        @endif
     </div>
 </aside>
 

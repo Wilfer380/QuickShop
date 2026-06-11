@@ -32,7 +32,7 @@
                         <div class="col">{{ optional($product->category)->name ?? 'Sin segmento' }}</div>
                         <div class="col"><p>{{ $product->name }}</p></div>
                         <div class="col"><p>{{ $product->description }}</p></div>
-                        <div class="col"><p>$ {{ $product->price }}</p></div>
+                        <div class="col"><p>$ {{ number_format((float) $product->price, 0, ',', '.') }}</p></div>
                         <div class="col"><p>{{ $product->stock }}</p></div>
                         <div class="col">
                             @if ($product->productImages->isNotEmpty())

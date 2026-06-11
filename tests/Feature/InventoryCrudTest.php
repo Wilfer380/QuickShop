@@ -33,6 +33,28 @@ it('allows an employee to create a vehicle inventory item with image', function 
     Storage::disk('public')->assertExists(ProductImage::first()->image_path);
 });
 
+it('accepts formatted money values when creating an inventory item', function () {
+    Storage::fake('public');
+
+    $employee = User::factory()->create(['role' => 'empleado']);
+    $category = Category::create([
+        'name' => 'Sedan',
+        'description' => 'Autos sedan',
+        'sort_order' => 10,
+    ]);
+
+    $this->actingAs($employee)->post(route('vehicle-publications.store'), [
+        'category_id' => $category->id,
+        'name' => 'Toyota Corolla Operativo',
+        'description' => 'Unidad sedan para turnos administrativos.',
+        'price' => '72.000',
+        'stock' => 4,
+        'image' => UploadedFile::fake()->image('corolla.jpg'),
+    ])->assertRedirect(route('vehicle-publications.index'));
+
+    expect(Product::first()->price)->toBe(72000.0);
+});
+
 it('allows authenticated employees to manage vehicle inventory', function () {
     $employee = User::factory()->create(['role' => 'empleado']);
 

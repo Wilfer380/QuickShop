@@ -2,10 +2,18 @@
 
 namespace App\Http\Requests\Inventory;
 
+use App\Support\Concerns\NormalizesMoneyInput;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVehiclePublicationRequest extends FormRequest
 {
+    use NormalizesMoneyInput;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeMoneyFields(['price']);
+    }
+
     public function authorize(): bool
     {
         return true;

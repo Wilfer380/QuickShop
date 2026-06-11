@@ -23,7 +23,7 @@
             '3' => 'Vendido',
             '4' => 'Reservado',
         ];
-        $thumb = $vehiculo->imagen ? route('vehiculos.imagen', $vehiculo) : null;
+        $thumb = $vehiculo->imagen ? route('vehiculos.imagen', ['vehiculo' => $vehiculo, 'v' => optional($vehiculo->updated_at)->timestamp]) : null;
     @endphp
 
     <section class="vehicles-page">

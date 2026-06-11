@@ -1,17 +1,21 @@
 @php
     $user = auth()->user();
-    $roleLabel = match ($user?->role) {
+    $displayName = request()->routeIs('parqueadero.*') ? 'Maicol Oliveras' : ($user?->name ?? 'Usuario interno');
+    $displayRole = request()->routeIs('parqueadero.*') ? 'Empleado' : match ($user?->role) {
         'admin' => 'Administrador',
         'supervisor' => 'Supervisor',
         'empleado' => 'Empleado',
         default => 'Usuario interno',
     };
-    $initials = collect(explode(' ', trim((string) ($user?->name ?? 'VP'))))
+    $searchPlaceholder = request()->routeIs('parqueadero.*') ? 'Buscar placas, clientes o ubicaciones…' : 'Buscar en VehiPark…';
+    $initials = request()->routeIs('parqueadero.*')
+        ? 'MO'
+        : collect(explode(' ', trim((string) ($user?->name ?? 'VP'))))
         ->filter()
         ->take(2)
         ->map(fn ($part) => mb_substr($part, 0, 1))
         ->implode('');
-    $avatarUrl = $user?->avatar ? route('profile.avatar', $user) : null;
+    $avatarUrl = request()->routeIs('parqueadero.*') ? null : ($user?->avatar ? route('profile.avatar', $user) : null);
 @endphp
 
 <style>
@@ -23,6 +27,10 @@
     .global-search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#94A3B8;pointer-events:none}
     .global-search-toggle{display:none;width:40px;height:40px;border-radius:10px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.85);color:#CBD5E1;align-items:center;justify-content:center}
     .global-search-toggle svg{width:18px;height:18px}
+    .topbar-user__avatar,.topbar-user-menu__avatar{width:42px;height:42px;border-radius:9999px;background:linear-gradient(135deg,#7c3aed,#3b82f6);display:grid;place-items:center;font-weight:800;color:#fff;box-shadow:0 12px 24px rgba(124,58,237,.18);overflow:hidden;flex:none}
+    .topbar-user-menu__avatar{width:44px;height:44px;box-shadow:0 12px 24px rgba(124,58,237,.16)}
+    .topbar-user__avatar img,.topbar-user-menu__avatar img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;border-radius:inherit}
+    .topbar-user__avatar span,.topbar-user-menu__avatar span{line-height:1}
     @media (max-width: 1024px){.global-search-wrapper{width:260px;max-width:260px}}
     @media (max-width: 768px){.global-search-wrapper{width:auto;max-width:none}.global-search{display:none}.global-search-toggle{display:inline-flex}}
 </style>
@@ -36,7 +44,7 @@
 
     <div class="topbar-right">
         <div class="global-search-wrapper">
-            <input type="search" class="global-search" placeholder="Buscar en VehiPark…" aria-label="Buscar en VehiPark">
+            <input type="search" class="global-search" placeholder="{{ $searchPlaceholder }}" aria-label="{{ $searchPlaceholder }}">
             <svg class="global-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
             <button type="button" class="global-search-toggle" aria-label="Abrir búsqueda global">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -58,8 +66,8 @@
                     @endif
                 </div>
                 <div class="topbar-user__meta">
-                    <strong>{{ $user?->name ?? 'Usuario interno' }}</strong>
-                    <span>{{ $roleLabel }}</span>
+                    <strong>{{ $displayName }}</strong>
+                    <span>{{ $displayRole }}</span>
                 </div>
                 <svg class="topbar-user__chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -74,14 +82,14 @@
                         @endif
                     </div>
                     <div>
-                        <strong>{{ $user?->name ?? 'Usuario interno' }}</strong>
+                        <strong>{{ $displayName }}</strong>
                         <span>{{ $user?->email ?? 'Sin correo' }}</span>
                     </div>
                 </div>
 
                 <div class="topbar-user-menu__section">
                     <span class="topbar-user-menu__section-label">Sesión actual</span>
-                    <div class="topbar-user-menu__pill">{{ $roleLabel }}</div>
+                    <div class="topbar-user-menu__pill">{{ $displayRole }}</div>
                 </div>
 
                 <a href="{{ route('profile.edit') }}" class="topbar-user-menu__action" role="menuitem">

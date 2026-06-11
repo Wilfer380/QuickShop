@@ -31,7 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('clientes', ClientesController::class);
         Route::get('vehiculos/exportar', [VehiculosController::class, 'exportar'])->name('vehiculos.exportar');
         Route::resource('vehiculos', VehiculosController::class);
-        Route::resource('ventas', VentasController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('ventas/exportar', [VentasController::class, 'exportar'])->name('ventas.exportar');
+        Route::resource('ventas', VentasController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/parqueadero', [ParqueaderoController::class, 'index'])->name('parqueadero.index');
         Route::get('/parqueadero/entrada', [ParqueaderoController::class, 'create'])->name('parqueadero.create');
         Route::post('/parqueadero/entrada', [ParqueaderoController::class, 'store'])->name('parqueadero.store');

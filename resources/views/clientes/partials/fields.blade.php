@@ -5,11 +5,15 @@
     $estados = ['activo' => 'Activo', 'inactivo' => 'Inactivo'];
 @endphp
 
-<div class="client-form-grid">
+<div class="client-form-grid" x-data="{ photoPreview: @js($cliente->foto ? asset('storage/' . $cliente->foto) : null) }">
     <label class="client-form-field" style="grid-column:1 / -1;">
         <span>Foto del cliente</span>
-        <input type="file" name="foto" accept="image/jpeg,image/png,image/webp">
+        <input type="file" name="foto" accept="image/jpeg,image/png,image/webp" @change="const file = $event.target.files?.[0]; photoPreview = file ? URL.createObjectURL(file) : photoPreview">
         @error('foto') <div class="client-form-errors">{{ $message }}</div> @enderror
+
+        <template x-if="photoPreview">
+            <img :src="photoPreview" alt="Vista previa de foto" class="client-photo-preview">
+        </template>
     </label>
 
     <label class="client-form-field">

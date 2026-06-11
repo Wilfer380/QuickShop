@@ -1,35 +1,19 @@
 @php
-    $kpis = [
-        ['title' => 'Vehículos disponibles', 'value' => $vehicleStats['available'] ?? 48, 'note' => '8 más que ayer', 'iconBg' => 'bg-blue-500', 'iconText' => 'text-white'],
-        ['title' => 'Vehículos vendidos', 'value' => 27, 'note' => '15% vs. mes anterior', 'iconBg' => 'bg-emerald-500', 'iconText' => 'text-white'],
-        ['title' => 'Vehículos parqueados', 'value' => 86, 'note' => 'Sin cambios', 'iconBg' => 'bg-violet-500', 'iconText' => 'text-white'],
-        ['title' => 'Cupos libres', 'value' => 34, 'note' => '6 menos que ayer', 'iconBg' => 'bg-orange-500', 'iconText' => 'text-white'],
-        ['title' => 'Ingresos del día', 'value' => '$6.850.000', 'note' => '18% vs. ayer', 'iconBg' => 'bg-teal-500', 'iconText' => 'text-white'],
+    $kpis = $kpis ?? [
+        ['title' => 'Vehículos disponibles', 'value' => $vehicleStats['available'] ?? 0, 'note' => 'Actualizado ahora', 'iconBg' => 'bg-blue-500', 'iconText' => 'text-white'],
+        ['title' => 'Vehículos vendidos', 'value' => 0, 'note' => 'Actualizado ahora', 'iconBg' => 'bg-emerald-500', 'iconText' => 'text-white'],
+        ['title' => 'Vehículos parqueados', 'value' => 0, 'note' => 'Actualizado ahora', 'iconBg' => 'bg-violet-500', 'iconText' => 'text-white'],
+        ['title' => 'Cupos libres', 'value' => 0, 'note' => 'Actualizado ahora', 'iconBg' => 'bg-orange-500', 'iconText' => 'text-white'],
+        ['title' => 'Ingresos del día', 'value' => '$0', 'note' => 'Actualizado ahora', 'iconBg' => 'bg-teal-500', 'iconText' => 'text-white'],
     ];
 
-    $movimientos = [
-        ['plate' => 'ABC-123', 'type' => 'Entrada al parqueadero', 'time' => '09:15 a. m.', 'tone' => 'green', 'icon' => 'arrow-in'],
-        ['plate' => 'DEF-456', 'type' => 'Salida del parqueadero', 'time' => '10:02 a. m.', 'tone' => 'red', 'icon' => 'arrow-out'],
-        ['plate' => 'GHI-789', 'type' => 'Entrada al parqueadero', 'time' => '10:45 a. m.', 'tone' => 'green', 'icon' => 'arrow-in'],
-        ['plate' => 'JKL-012', 'type' => 'Salida del parqueadero', 'time' => '11:30 a. m.', 'tone' => 'red', 'icon' => 'arrow-out'],
-        ['plate' => 'MNO-345', 'type' => 'Venta realizada', 'time' => '12:05 p. m.', 'tone' => 'blue', 'icon' => 'car'],
-    ];
+    $movimientos = $movimientos ?? [];
 
-    $ventas = [
-        ['date' => '16/05/2024', 'plate' => 'ABC-123', 'vehicle' => 'Toyota Corolla 2020', 'client' => 'María Gómez', 'value' => '$68.500.000'],
-        ['date' => '16/05/2024', 'plate' => 'DEF-456', 'vehicle' => 'Mazda CX-5 2021', 'client' => 'Andrés Ramírez', 'value' => '$89.900.000'],
-        ['date' => '15/05/2024', 'plate' => 'GHI-789', 'vehicle' => 'Chevrolet Onix 2022', 'client' => 'Laura Torres', 'value' => '$52.900.000'],
-        ['date' => '15/05/2024', 'plate' => 'JKL-012', 'vehicle' => 'Kia Sportage 2021', 'client' => 'Carlos Díaz', 'value' => '$93.000.000'],
-        ['date' => '14/05/2024', 'plate' => 'MNO-345', 'vehicle' => 'Nissan Versa 2020', 'client' => 'Diana Ruiz', 'value' => '$47.800.000'],
-    ];
+    $ventas = $ventas ?? [];
 
-    $alerts = [
-        ['title' => '3 pagos pendientes', 'desc' => 'Clientes con pagos vencidos por $2.450.000.', 'tone' => 'amber', 'icon' => 'warning'],
-        ['title' => '2 vehículos reservados', 'desc' => 'Reservas para hoy requieren confirmación.', 'tone' => 'blue', 'icon' => 'calendar'],
-        ['title' => 'Alta ocupación del parqueadero', 'desc' => 'La ocupación actual es del 71%.', 'tone' => 'red', 'icon' => 'alert'],
-    ];
+    $alerts = $alerts ?? [];
 
-    $summary = [
+    $summary = $summary ?? [
         ['label' => 'Publicaciones activas', 'value' => $vehicleStats['total'] ?? 75, 'icon' => 'car'],
         ['label' => 'Disponibles', 'value' => $vehicleStats['available'] ?? 48, 'icon' => 'users'],
         ['label' => 'Segmentos', 'value' => $vehicleStats['segments'] ?? 12, 'icon' => 'clock'],
@@ -43,6 +27,8 @@
         'chips' => ['Disponibilidad', 'Asignación', 'Mantenimiento', 'Administración'],
         'spotlightProducts' => [],
     ];
+
+    $salesChartData = $salesChart ?? array_fill(0, 31, 0);
 @endphp
 
 @push('styles')
@@ -274,9 +260,9 @@
                 <canvas id="salesChart"></canvas>
             </div>
             <div class="chart-stats">
-                <div class="chart-stat"><span>Total del mes</span><strong>$162.450.000</strong></div>
-                <div class="chart-stat"><span>Promedio diario</span><strong>$5.240.323</strong></div>
-                <div class="chart-stat"><span>Mejor día</span><strong class="green">$9.850.000</strong></div>
+                <div class="chart-stat"><span>Total del mes</span><strong>${{ number_format((float) ($salesMonthTotal ?? 0), 0, ',', '.') }}</strong></div>
+                <div class="chart-stat"><span>Promedio diario</span><strong>${{ number_format((float) ($salesAverageDaily ?? 0), 0, ',', '.') }}</strong></div>
+                <div class="chart-stat"><span>Mejor día</span><strong class="green">${{ number_format((float) ($bestDay ?? 0), 0, ',', '.') }}</strong></div>
             </div>
         </section>
 
@@ -286,12 +272,12 @@
             </div>
             <div class="chart-box chart-box--doughnut">
                 <canvas id="occupancyChart"></canvas>
-                <div class="doughnut-center"><strong>71%</strong><span>Ocupado</span></div>
+                <div class="doughnut-center"><strong>{{ ($parkingStats['total'] ?? 0) > 0 ? round((($parkingStats['occupied'] ?? 0) / $parkingStats['total']) * 100) : 0 }}%</strong><span>Ocupado</span></div>
             </div>
             <div class="chart-stats" style="grid-template-columns:1fr 1fr 1fr">
-                <div class="chart-stat"><span>Ocupados</span><strong>86</strong></div>
-                <div class="chart-stat"><span>Libres</span><strong>34</strong></div>
-                <div class="chart-stat"><span>Total de cupos</span><strong>120</strong></div>
+                <div class="chart-stat"><span>Ocupados</span><strong>{{ $parkingStats['occupied'] ?? 0 }}</strong></div>
+                <div class="chart-stat"><span>Libres</span><strong>{{ $parkingStats['available'] ?? 0 }}</strong></div>
+                <div class="chart-stat"><span>Total de cupos</span><strong>{{ $parkingStats['total'] ?? 0 }}</strong></div>
             </div>
         </section>
 
@@ -301,7 +287,7 @@
                 <a href="#">Ver todos</a>
             </div>
             <div class="movement-list">
-                @foreach ($movimientos as $movement)
+                @forelse ($movimientos as $movement)
                     <div class="movement-item">
                         <div class="movement-icon {{ $movement['tone'] }}">
                             @if ($movement['icon'] === 'car')
@@ -318,7 +304,9 @@
                         </div>
                         <div class="movement-time">{{ $movement['time'] }}</div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="panel-card__muted">No hay movimientos registrados aún.</div>
+                @endforelse
             </div>
             <div class="movements-footer">
                 <a class="movements-button" href="#">Ver todos los movimientos <span>›</span></a>
@@ -344,7 +332,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($ventas as $sale)
+                        @forelse ($ventas as $sale)
                             <tr>
                                 <td>{{ $sale['date'] }}</td>
                                 <td>{{ $sale['plate'] }}</td>
@@ -352,7 +340,9 @@
                                 <td>{{ $sale['client'] }}</td>
                                 <td class="value">{{ $sale['value'] }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="5" class="panel-card__muted">No hay ventas registradas aún.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -364,7 +354,7 @@
                 <a href="#">Ver todas</a>
             </div>
             <div class="alert-list">
-                @foreach ($alerts as $alert)
+                @forelse ($alerts as $alert)
                     <div class="alert-item">
                         <div class="alert-icon {{ $alert['tone'] }}">
                             @if ($alert['icon'] === 'calendar')
@@ -381,7 +371,9 @@
                         </div>
                         <div class="alert-chevron">›</div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="panel-card__muted">Sin alertas activas.</div>
+                @endforelse
             </div>
         </section>
 
@@ -390,7 +382,7 @@
                 <h3>Resumen rápido</h3>
             </div>
             <div class="summary-list">
-                @foreach ($summary as $item)
+                @forelse ($summary as $item)
                     <div class="summary-item">
                         <div class="summary-item__left">
                             <div class="summary-item__icon">
@@ -412,7 +404,9 @@
                         </div>
                         <div class="summary-item__value">{{ $item['value'] }}</div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="panel-card__muted">Sin resumen disponible.</div>
+                @endforelse
             </div>
         </section>
     </div>
@@ -431,7 +425,7 @@
                         datasets: [
                             {
                                 label: 'Ventas (COP)',
-                                data: [4.8,6.3,5.1,4.2,5.4,4.8,5.9,4.1,4.6,6.7,5.8,6.1,5.2,4.7,5.0,4.9,5.9,4.4,5.1,7.3,6.8,7.9,6.1,6.4,6.9,6.3,5.8,4.9,6.5,7.8,6.4],
+                                data: @json($salesChartData),
                                 backgroundColor: 'rgba(124, 58, 237, 0.85)',
                                 borderRadius: 6,
                                 borderSkipped: false,
@@ -441,7 +435,7 @@
                             {
                                 label: 'Promedio diario',
                                 type: 'line',
-                                data: [4.6,4.9,4.4,4.2,4.7,4.5,4.9,4.3,4.8,5.0,5.5,5.8,5.9,5.7,5.2,5.0,4.8,5.2,5.5,5.9,6.6,7.0,6.9,6.8,6.4,5.9,5.2,5.0,5.4,5.9,6.1],
+                                data: @json($salesChartData),
                                 borderColor: '#60a5fa',
                                 backgroundColor: '#60a5fa',
                                 tension: 0.38,
@@ -475,7 +469,7 @@
                     data: {
                         labels: ['Ocupados', 'Libres'],
                         datasets: [{
-                            data: [86, 34],
+                            data: [{{ $parkingStats['occupied'] ?? 0 }}, {{ $parkingStats['available'] ?? 0 }}],
                             backgroundColor: ['#7c3aed', '#3b82f6'],
                             borderWidth: 0,
                             hoverOffset: 2,

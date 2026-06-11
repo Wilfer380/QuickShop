@@ -2,6 +2,18 @@
 
 @php
     $ubicaciones = $ubicaciones ?? ['inventario venta' => 'Inventario venta', 'parqueadero' => 'Parqueadero', 'taller' => 'Taller', 'vendido' => 'Vendido', 'reservado' => 'Reservado'];
+    $formatMoneyInput = static function ($value) {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $digits = preg_replace('/[^\d]/', '', (string) $value);
+
+        return $digits === '' ? '' : number_format((int) $digits, 0, ',', '.');
+    };
+
+    $precioCompraValue = old('precio_compra', $vehiculo->precio_compra);
+    $precioVentaValue = old('precio_venta', $vehiculo->precio_venta);
 @endphp
 
 <div class="vehicle-field vehicle-field--full vehicle-upload">
@@ -86,7 +98,7 @@
     </div>
     <div class="vehicle-field">
         <label for="precio_compra"><span>Precio compra</span></label>
-        <input id="precio_compra" type="number" name="precio_compra" min="0" step="0.01" value="{{ old('precio_compra', $vehiculo->precio_compra) }}">
+        <input id="precio_compra" type="text" name="precio_compra" inputmode="numeric" autocomplete="off" placeholder="3.000.000" data-money-input="true" value="{{ $formatMoneyInput($precioCompraValue) }}">
         @error('precio_compra') <div class="crud-error">{{ $message }}</div> @enderror
     </div>
 </div>
@@ -94,7 +106,7 @@
 <div class="vehicle-grid">
     <div class="vehicle-field">
         <label for="precio_venta"><span>Precio venta</span></label>
-        <input id="precio_venta" type="number" name="precio_venta" min="0" step="0.01" value="{{ old('precio_venta', $vehiculo->precio_venta) }}">
+        <input id="precio_venta" type="text" name="precio_venta" inputmode="numeric" autocomplete="off" placeholder="5.678.000" data-money-input="true" value="{{ $formatMoneyInput($precioVentaValue) }}">
         @error('precio_venta') <div class="crud-error">{{ $message }}</div> @enderror
     </div>
     <div class="vehicle-field">
@@ -118,3 +130,22 @@
     <button class="crud-button" type="submit">Guardar vehículo</button>
     <a class="crud-link" href="{{ route('vehiculos.index') }}">Cancelar</a>
 </div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const moneyInputs = document.querySelectorAll('[data-money-input="true"]');
+
+            const formatMoney = (input) => {
+                const digits = (input.value || '').replace(/[^\d]/g, '');
+                input.value = digits ? new Intl.NumberFormat('es-CO').format(Number(digits)) : '';
+            };
+
+            moneyInputs.forEach((input) => {
+                formatMoney(input);
+                input.addEventListener('input', () => formatMoney(input));
+                input.addEventListener('blur', () => formatMoney(input));
+            });
+        });
+    </script>
+@endpush

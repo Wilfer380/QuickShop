@@ -66,7 +66,7 @@
             <div class="inventory-grid">
                 <div class="inventory-field">
                     <label for="price">Valor operativo</label>
-                    <input type="number" name="price" id="price" min="0" step="0.01" value="{{ old('price', $product->price ?? '') }}" required>
+                    <input type="text" name="price" id="price" inputmode="numeric" autocomplete="off" placeholder="5.000" data-money-input="true" value="{{ old('price', $product->price ?? '') }}" required>
                 </div>
 
                 <div class="inventory-field inventory-field--hint">

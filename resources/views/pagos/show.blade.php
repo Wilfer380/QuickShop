@@ -4,7 +4,7 @@
         <section class="crud-panel">
             @if (session('status'))<div class="crud-alert">{{ session('status') }}</div>@endif
             <div class="crud-grid">
-                <p><strong>Valor:</strong> ${{ number_format((float) $pago->valor, 2) }}</p>
+                <p><strong>Valor:</strong> ${{ number_format((float) $pago->valor, 0, ',', '.') }}</p>
                 <p><strong>Concepto:</strong> {{ ucfirst($pago->concepto) }}</p>
                 <p><strong>Metodo:</strong> {{ ucfirst($pago->metodo_pago) }}</p>
                 <p><strong>Referencia:</strong> {{ $pago->referencia ?? 'Sin referencia' }}</p>

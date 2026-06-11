@@ -2,11 +2,19 @@
 
 namespace App\Http\Requests\Tarifas;
 
+use App\Support\Concerns\NormalizesMoneyInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreTarifaRequest extends FormRequest
 {
+    use NormalizesMoneyInput;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeMoneyFields(['valor']);
+    }
+
     public function authorize(): bool
     {
         return true;
