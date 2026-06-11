@@ -75,50 +75,40 @@ class ClientesController extends Controller
             ->withMax('pagos as ultimo_pago', 'pagado_at')
             ->withMax('movimientosParqueadero as ultimo_movimiento', 'entrada_at')
             ->get();
-        $fileName = 'clientes-vehipark.xls';
+        $fileName = 'clientes-vehipark.csv';
 
         return response()->streamDownload(function () use ($clientes) {
-            echo '<html><head><meta charset="UTF-8"></head><body>';
-            echo '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">';
-            echo '<tr><th colspan="14" style="background:#1f2937;color:#fff;font-size:14px;text-align:left;">Reporte de clientes - VehiPark</th></tr>';
-            echo '<tr style="background:#dbeafe;font-weight:bold;">';
-            foreach (['Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Vehículos', 'Ventas', 'Pagos', 'Parqueadero', 'Fecha de registro'] as $header) {
-                echo '<th>' . e($header) . '</th>';
-            }
-            echo '</tr>';
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fwrite($handle, "sep=;\n");
+
+            fputcsv($handle, [
+                'Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Vehículos', 'Ventas', 'Pagos', 'Parqueadero', 'Fecha de registro', 'Últimos movimientos',
+            ], ';');
 
             foreach ($clientes as $cliente) {
-                echo '<tr>';
-                echo '<td>' . e(trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''))) . '</td>';
-                echo '<td>' . e((string) $cliente->tipo_documento) . '</td>';
-                echo '<td>' . e((string) $cliente->documento) . '</td>';
-                echo '<td>' . e((string) ($cliente->telefono ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->email ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->ciudad ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->direccion ?? '')) . '</td>';
-                echo '<td>' . e(ucfirst((string) ($cliente->segmento ?? ''))) . '</td>';
-                echo '<td>' . e(ucfirst((string) ($cliente->estado ?? ''))) . '</td>';
-                echo '<td>' . e((string) ($cliente->vehiculos_count ?? 0)) . '</td>';
-                echo '<td>' . e((string) ($cliente->ventas_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e((string) ($cliente->pagos_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e((string) ($cliente->movimientos_parqueadero_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e(optional($cliente->created_at)->format('d/m/Y')) . '</td>';
-                echo '</tr>';
-
-                echo '<tr>';
-                echo '<td colspan="14" style="background:#f8fafc;color:#334155;">';
-                echo '<strong>Últimos movimientos:</strong> ';
-                echo 'Venta: ' . e($cliente->ultima_compra ? \Illuminate\Support\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas') . ' · ';
-                echo 'Pago: ' . e($cliente->ultimo_pago ? \Illuminate\Support\Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos') . ' · ';
-                echo 'Parqueadero: ' . e($cliente->ultimo_movimiento ? \Illuminate\Support\Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos');
-                echo '</td>';
-                echo '</tr>';
+                fputcsv($handle, [
+                    trim($cliente->nombres . ' ' . ($cliente->apellidos ?? '')),
+                    $cliente->tipo_documento,
+                    $cliente->documento,
+                    $cliente->telefono ?? '',
+                    $cliente->email ?? '',
+                    $cliente->ciudad ?? '',
+                    $cliente->direccion ?? '',
+                    ucfirst((string) ($cliente->segmento ?? '')),
+                    ucfirst((string) ($cliente->estado ?? '')),
+                    (int) ($cliente->vehiculos_count ?? 0),
+                    (int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.'),
+                    (int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.'),
+                    (int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.'),
+                    optional($cliente->created_at)->format('d/m/Y'),
+                    'Venta: ' . ($cliente->ultima_compra ? \Illuminate\Support\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas') . ' | Pago: ' . ($cliente->ultimo_pago ? \Illuminate\Support\Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos') . ' | Parqueadero: ' . ($cliente->ultimo_movimiento ? \Illuminate\Support\Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos'),
+                ], ';');
             }
 
-            echo '</table>';
-            echo '</body></html>';
+            fclose($handle);
         }, $fileName, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 

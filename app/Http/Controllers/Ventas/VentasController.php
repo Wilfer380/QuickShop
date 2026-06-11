@@ -98,7 +98,8 @@ class VentasController extends Controller
         return response()->streamDownload(function () use ($ventas) {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
-            fputcsv($handle, ['Venta', 'Cliente', 'Vehiculo', 'Fecha', 'Precio base', 'Descuento', 'Impuestos', 'Total', 'Pagado', 'Saldo', 'Estado', 'Vendedor']);
+            fwrite($handle, "sep=;\n");
+            fputcsv($handle, ['Venta', 'Cliente', 'Vehiculo', 'Fecha', 'Precio base', 'Descuento', 'Impuestos', 'Total', 'Pagado', 'Saldo', 'Estado', 'Vendedor'], ';');
 
             foreach ($ventas as $venta) {
                 $pagado = (float) $venta->pagos_sum_valor;
@@ -115,7 +116,7 @@ class VentasController extends Controller
                     number_format(max(0, (float) $venta->total - $pagado), 0, ',', '.'),
                     ucfirst($venta->estado),
                     $venta->vendedor?->name ?? '',
-                ]);
+                ], ';');
             }
 
             fclose($handle);
