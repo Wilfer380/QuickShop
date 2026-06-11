@@ -5,6 +5,8 @@
 ])
 
 <x-app-layout>
+    <x-clientes-styles />
+
     <section class="min-h-[calc(100vh-5rem)] bg-slate-950 px-6 py-10 text-slate-100">
         <div class="mx-auto max-w-6xl rounded-[2rem] border border-white/10 bg-slate-900/80 p-8 shadow-2xl shadow-black/40">
             <span class="text-xs font-black uppercase tracking-[0.24em] text-sky-300">{{ $eyebrow }}</span>

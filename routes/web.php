@@ -39,10 +39,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/parqueadero/{movimiento}', [ParqueaderoController::class, 'show'])->name('parqueadero.show');
         Route::post('/parqueadero/{movimiento}/salida', [ParqueaderoController::class, 'salida'])->name('parqueadero.salida');
         Route::resource('cupos', CuposController::class);
+        Route::post('tarifas/{tarifa}/duplicar', [TarifasController::class, 'duplicate'])->name('tarifas.duplicate');
         Route::resource('tarifas', TarifasController::class);
         Route::resource('pagos', PagosController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/reportes', [ReportesController::class, 'index'])->name('reportes.index');
         Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion.index');
+        Route::patch('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
         Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios.index');
         Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
     });
