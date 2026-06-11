@@ -138,7 +138,8 @@ class VehiculosController extends Controller
         return response()->streamDownload(function () use ($vehiculos) {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
-            fputcsv($handle, ['Vehículo', 'Placa', 'Tipo', 'Marca', 'Modelo', 'Año', 'Color', 'Kilometraje', 'Precio compra', 'Precio venta', 'Estado', 'Ubicación']);
+            fwrite($handle, "sep=;\n");
+            fputcsv($handle, ['Vehículo', 'Placa', 'Tipo', 'Marca', 'Modelo', 'Año', 'Color', 'Kilometraje', 'Precio compra', 'Precio venta', 'Estado', 'Ubicación'], ';');
             foreach ($vehiculos as $vehiculo) {
                 fputcsv($handle, [
                     trim($vehiculo->marca . ' ' . $vehiculo->modelo),
@@ -153,7 +154,7 @@ class VehiculosController extends Controller
                     number_format((float) ($vehiculo->precio_venta ?? 0), 0, ',', '.'),
                     ucfirst($vehiculo->estado),
                     $vehiculo->ubicacion,
-                ]);
+                ], ';');
             }
             fclose($handle);
         }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);

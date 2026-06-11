@@ -9,6 +9,7 @@ use App\Models\Cliente;
 use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -75,50 +76,12 @@ class ClientesController extends Controller
             ->withMax('pagos as ultimo_pago', 'pagado_at')
             ->withMax('movimientosParqueadero as ultimo_movimiento', 'entrada_at')
             ->get();
-        $fileName = 'clientes-vehipark.xls';
+        $fileName = 'clientes-vehipark.xlsx';
 
         return response()->streamDownload(function () use ($clientes) {
-            echo '<html><head><meta charset="UTF-8"></head><body>';
-            echo '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">';
-            echo '<tr><th colspan="14" style="background:#1f2937;color:#fff;font-size:14px;text-align:left;">Reporte de clientes - VehiPark</th></tr>';
-            echo '<tr style="background:#dbeafe;font-weight:bold;">';
-            foreach (['Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Vehículos', 'Ventas', 'Pagos', 'Parqueadero', 'Fecha de registro'] as $header) {
-                echo '<th>' . e($header) . '</th>';
-            }
-            echo '</tr>';
-
-            foreach ($clientes as $cliente) {
-                echo '<tr>';
-                echo '<td>' . e(trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''))) . '</td>';
-                echo '<td>' . e((string) $cliente->tipo_documento) . '</td>';
-                echo '<td>' . e((string) $cliente->documento) . '</td>';
-                echo '<td>' . e((string) ($cliente->telefono ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->email ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->ciudad ?? '')) . '</td>';
-                echo '<td>' . e((string) ($cliente->direccion ?? '')) . '</td>';
-                echo '<td>' . e(ucfirst((string) ($cliente->segmento ?? ''))) . '</td>';
-                echo '<td>' . e(ucfirst((string) ($cliente->estado ?? ''))) . '</td>';
-                echo '<td>' . e((string) ($cliente->vehiculos_count ?? 0)) . '</td>';
-                echo '<td>' . e((string) ($cliente->ventas_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e((string) ($cliente->pagos_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e((string) ($cliente->movimientos_parqueadero_count ?? 0)) . ' / $' . e(number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.')) . '</td>';
-                echo '<td>' . e(optional($cliente->created_at)->format('d/m/Y')) . '</td>';
-                echo '</tr>';
-
-                echo '<tr>';
-                echo '<td colspan="14" style="background:#f8fafc;color:#334155;">';
-                echo '<strong>Últimos movimientos:</strong> ';
-                echo 'Venta: ' . e($cliente->ultima_compra ? \Illuminate\Support\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas') . ' · ';
-                echo 'Pago: ' . e($cliente->ultimo_pago ? \Illuminate\Support\Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos') . ' · ';
-                echo 'Parqueadero: ' . e($cliente->ultimo_movimiento ? \Illuminate\Support\Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos');
-                echo '</td>';
-                echo '</tr>';
-            }
-
-            echo '</table>';
-            echo '</body></html>';
+            echo $this->buildClientesWorkbookXlsx($clientes);
         }, $fileName, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 
@@ -220,6 +183,330 @@ class ClientesController extends Controller
         }
 
         return [$clientesQuery, $search, $estado, $ciudad, $segmento];
+    }
+
+    private function buildClientesWorkbookXlsx($clientes): string
+    {
+        $rows = $clientes->map(function (Cliente $cliente): array {
+            $fullName = trim($cliente->nombres . ' ' . ($cliente->apellidos ?? ''));
+            $lastPurchase = $cliente->ultima_compra ? Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : 'Sin ventas';
+            $lastPayment = $cliente->ultimo_pago ? Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : 'Sin pagos';
+            $lastParking = $cliente->ultimo_movimiento ? Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : 'Sin movimientos';
+
+            return [
+                $fullName,
+                (string) $cliente->tipo_documento,
+                (string) $cliente->documento,
+                (string) ($cliente->telefono ?? ''),
+                (string) ($cliente->email ?? ''),
+                (string) ($cliente->ciudad ?? ''),
+                (string) ($cliente->direccion ?? ''),
+                ucfirst((string) ($cliente->segmento ?? '')),
+                ucfirst((string) ($cliente->estado ?? '')),
+                (string) (int) ($cliente->vehiculos_count ?? 0),
+                (int) ($cliente->ventas_count ?? 0) . ' / $' . number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.'),
+                (int) ($cliente->pagos_count ?? 0) . ' / $' . number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.'),
+                (int) ($cliente->movimientos_parqueadero_count ?? 0) . ' / $' . number_format((float) ($cliente->parqueadero_total ?? 0), 0, ',', '.'),
+                optional($cliente->created_at)->format('d/m/Y'),
+                'Venta: ' . $lastPurchase . ' | Pago: ' . $lastPayment . ' | Parqueadero: ' . $lastParking,
+            ];
+        })->values()->all();
+
+        return $this->buildZipArchive([
+            '[Content_Types].xml' => $this->clientesContentTypesXml(),
+            '_rels/.rels' => $this->clientesRelsXml(),
+            'docProps/app.xml' => $this->clientesAppXml(),
+            'docProps/core.xml' => $this->clientesCoreXml(),
+            'xl/workbook.xml' => $this->clientesWorkbookXml(),
+            'xl/_rels/workbook.xml.rels' => $this->clientesWorkbookRelsXml(),
+            'xl/styles.xml' => $this->clientesStylesXml(),
+            'xl/worksheets/sheet1.xml' => $this->clientesSheetXml($rows),
+        ]);
+    }
+
+    private function clientesSheetXml(array $rows): string
+    {
+        $title = $this->xmlEscape('Reporte de clientes - VehiPark');
+        $subtitle = $this->xmlEscape('Exportado el ' . now()->format('d/m/Y H:i') . ' · Registros: ' . count($rows));
+
+        $headerLabels = [
+            'Nombre completo',
+            'Tipo de documento',
+            'Documento',
+            'Teléfono',
+            'Correo electrónico',
+            'Ciudad',
+            'Dirección',
+            'Segmento',
+            'Estado',
+            'Vehículos',
+            'Ventas',
+            'Pagos',
+            'Parqueadero',
+            'Fecha de registro',
+            'Últimos movimientos',
+        ];
+
+        $sheetRows = [];
+        $sheetRows[] = $this->xlsxRow(1, [$title], 1, 1, false);
+        $sheetRows[] = $this->xlsxRow(2, [$subtitle], 2, 2, false);
+        $sheetRows[] = $this->xlsxRow(3, $headerLabels, 3, 3, false);
+
+        foreach ($rows as $index => $row) {
+            $rowNumber = $index + 4;
+            $isOdd = $index % 2 === 1;
+            $sheetRows[] = $this->xlsxRow($rowNumber, $row, $isOdd ? 5 : 4, $isOdd ? 7 : 6, $isOdd ? 9 : 8);
+        }
+
+        $lastRow = count($rows) + 3;
+        $autoFilter = $lastRow >= 3 ? '<autoFilter ref="A3:O' . $lastRow . '"/>' : '';
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+            . '<sheetFormatPr defaultRowHeight="18"/>'
+            . '<cols>'
+            . '<col min="1" max="1" width="24" customWidth="1"/>'
+            . '<col min="2" max="2" width="14" customWidth="1"/>'
+            . '<col min="3" max="3" width="14" customWidth="1"/>'
+            . '<col min="4" max="4" width="16" customWidth="1"/>'
+            . '<col min="5" max="5" width="28" customWidth="1"/>'
+            . '<col min="6" max="6" width="16" customWidth="1"/>'
+            . '<col min="7" max="7" width="24" customWidth="1"/>'
+            . '<col min="8" max="8" width="14" customWidth="1"/>'
+            . '<col min="9" max="9" width="14" customWidth="1"/>'
+            . '<col min="10" max="10" width="11" customWidth="1"/>'
+            . '<col min="11" max="11" width="14" customWidth="1"/>'
+            . '<col min="12" max="12" width="14" customWidth="1"/>'
+            . '<col min="13" max="13" width="14" customWidth="1"/>'
+            . '<col min="14" max="14" width="14" customWidth="1"/>'
+            . '<col min="15" max="15" width="42" customWidth="1"/>'
+            . '</cols>'
+            . '<sheetData>' . implode('', $sheetRows) . '</sheetData>'
+            . $autoFilter
+            . '<mergeCells count="2"><mergeCell ref="A1:O1"/><mergeCell ref="A2:O2"/></mergeCells>'
+            . '<pageMargins left="0.3" right="0.3" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>'
+            . '</worksheet>';
+    }
+
+    private function clientesWorkbookXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheets><sheet name="Clientes" sheetId="1" r:id="rId1"/></sheets>'
+            . '</workbook>';
+    }
+
+    private function clientesWorkbookRelsXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . '</Relationships>';
+    }
+
+    private function clientesRelsXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>'
+            . '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>'
+            . '</Relationships>';
+    }
+
+    private function clientesContentTypesXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            . '<Default Extension="xml" ContentType="application/xml"/>'
+            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            . '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
+            . '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>'
+            . '</Types>';
+    }
+
+    private function clientesAppXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" '
+            . 'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">'
+            . '<Application>VehiPark</Application>'
+            . '</Properties>';
+    }
+
+    private function clientesCoreXml(): string
+    {
+        $createdAt = now()->toAtomString();
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" '
+            . 'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            . 'xmlns:dcterms="http://purl.org/dc/terms/" '
+            . 'xmlns:dcmitype="http://purl.org/dc/dcmitype/" '
+            . 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            . '<dc:title>Reporte de clientes - VehiPark</dc:title>'
+            . '<dc:creator>VehiPark</dc:creator>'
+            . '<cp:lastModifiedBy>VehiPark</cp:lastModifiedBy>'
+            . '<dcterms:created xsi:type="dcterms:W3CDTF">' . $createdAt . '</dcterms:created>'
+            . '<dcterms:modified xsi:type="dcterms:W3CDTF">' . $createdAt . '</dcterms:modified>'
+            . '</cp:coreProperties>';
+    }
+
+    private function clientesStylesXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<fonts count="4">'
+            . '<font><sz val="11"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="14"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'
+            . '<font><i/><sz val="10"/><color rgb="FF155E75"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'
+            . '</fonts>'
+            . '<fills count="5">'
+            . '<fill><patternFill patternType="none"/></fill>'
+            . '<fill><patternFill patternType="gray125"/></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF0F766E"/><bgColor indexed="64"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF1E293B"/><bgColor indexed="64"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill>'
+            . '</fills>'
+            . '<borders count="1">'
+            . '<border><left style="thin"><color rgb="FFD1D5DB"/></left><right style="thin"><color rgb="FFD1D5DB"/></right><top style="thin"><color rgb="FFD1D5DB"/></top><bottom style="thin"><color rgb="FFD1D5DB"/></bottom><diagonal/></border>'
+            . '</borders>'
+            . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            . '<cellXfs count="10">'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+            . '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="2" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>'
+            . '</cellXfs>'
+            . '</styleSheet>';
+    }
+
+    private function xlsxRow(int $rowNumber, array $values, int $styleId, int $centerStyleId, int $wrapStyleId): string
+    {
+        $xml = '<row r="' . $rowNumber . '" spans="1:15">';
+
+        foreach ($values as $index => $value) {
+            $column = $this->xlsxColumn($index + 1);
+            $cellRef = $column . $rowNumber;
+            $isWrapColumn = $index === 14;
+            $cellStyleId = $isWrapColumn ? $wrapStyleId : ($index >= 9 && $index <= 13 ? $centerStyleId : $styleId);
+            $xml .= '<c r="' . $cellRef . '" t="inlineStr" s="' . $cellStyleId . '"><is><t xml:space="preserve">' . $this->xmlEscape((string) $value) . '</t></is></c>';
+        }
+
+        return $xml . '</row>';
+    }
+
+    private function xlsxColumn(int $index): string
+    {
+        $column = '';
+
+        while ($index > 0) {
+            $index--;
+            $column = chr(65 + ($index % 26)) . $column;
+            $index = intdiv($index, 26);
+        }
+
+        return $column;
+    }
+
+    private function xmlEscape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    }
+
+    private function buildZipArchive(array $files): string
+    {
+        $data = '';
+        $centralDirectory = '';
+        $offset = 0;
+
+        foreach ($files as $name => $content) {
+            $name = str_replace('\\', '/', $name);
+            $content = (string) $content;
+            $nameLength = strlen($name);
+            $contentLength = strlen($content);
+            $crc = crc32($content);
+            if ($crc < 0) {
+                $crc += 4294967296;
+            }
+
+            $localHeader =
+                $this->zipPack32(0x04034b50) .
+                $this->zipPack16(20) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32($crc) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack16($nameLength) .
+                $this->zipPack16(0) .
+                $name .
+                $content;
+
+            $data .= $localHeader;
+
+            $centralDirectory .=
+                $this->zipPack32(0x02014b50) .
+                $this->zipPack16(20) .
+                $this->zipPack16(20) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32($crc) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack32($contentLength) .
+                $this->zipPack16($nameLength) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack16(0) .
+                $this->zipPack32(0) .
+                $this->zipPack32($offset) .
+                $name;
+
+            $offset += strlen($localHeader);
+        }
+
+        $centralDirectoryOffset = strlen($data);
+        $data .= $centralDirectory;
+        $data .=
+            $this->zipPack32(0x06054b50) .
+            $this->zipPack16(0) .
+            $this->zipPack16(0) .
+            $this->zipPack16(count($files)) .
+            $this->zipPack16(count($files)) .
+            $this->zipPack32(strlen($centralDirectory)) .
+            $this->zipPack32($centralDirectoryOffset) .
+            $this->zipPack16(0);
+
+        return $data;
+    }
+
+    private function zipPack16(int $value): string
+    {
+        return pack('v', $value & 0xffff);
+    }
+
+    private function zipPack32(int $value): string
+    {
+        return pack('V', $value & 0xffffffff);
     }
 
 }
