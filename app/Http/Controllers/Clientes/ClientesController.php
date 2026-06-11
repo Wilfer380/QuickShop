@@ -66,16 +66,24 @@ class ClientesController extends Controller
             $clientesQuery->whereIn('id', $selectedIds);
         }
 
-        $clientes = $clientesQuery->get();
+        $clientes = $clientesQuery
+            ->withCount(['vehiculos', 'ventas', 'pagos', 'movimientosParqueadero'])
+            ->withSum('ventas as compras_total', 'total')
+            ->withSum('pagos as pagos_total', 'valor')
+            ->withMax('ventas as ultima_compra', 'fecha_venta')
+            ->withMax('pagos as ultimo_pago', 'pagado_at')
+            ->withMax('movimientosParqueadero as ultimo_movimiento', 'entrada_at')
+            ->get();
         $fileName = 'clientes-vehipark.csv';
 
         return response()->streamDownload(function () use ($clientes) {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
+            fwrite($handle, "sep=;\n");
 
             fputcsv($handle, [
-                'Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Total compras', 'Última compra', 'Fecha de registro',
-            ]);
+                'Nombre completo', 'Tipo de documento', 'Documento', 'Teléfono', 'Correo electrónico', 'Ciudad', 'Dirección', 'Segmento', 'Estado', 'Vehículos registrados', 'Ventas registradas', 'Compras totales', 'Última compra', 'Pagos registrados', 'Total pagado', 'Último pago', 'Movimientos parqueadero', 'Último movimiento', 'Fecha de registro',
+            ], ';');
 
             foreach ($clientes as $cliente) {
                 fputcsv($handle, [
@@ -88,10 +96,17 @@ class ClientesController extends Controller
                     $cliente->direccion ?? '',
                     ucfirst((string) ($cliente->segmento ?? '')),
                     ucfirst((string) ($cliente->estado ?? '')),
+                    (int) ($cliente->vehiculos_count ?? 0),
+                    (int) ($cliente->ventas_count ?? 0),
                     number_format((float) ($cliente->compras_total ?? 0), 0, ',', '.'),
                     $cliente->ultima_compra ? \Illuminate\Support\Carbon::parse($cliente->ultima_compra)->format('d/m/Y') : '',
+                    (int) ($cliente->pagos_count ?? 0),
+                    number_format((float) ($cliente->pagos_total ?? 0), 0, ',', '.'),
+                    $cliente->ultimo_pago ? \Illuminate\Support\Carbon::parse($cliente->ultimo_pago)->format('d/m/Y h:i A') : '',
+                    (int) ($cliente->movimientos_parqueadero_count ?? 0),
+                    $cliente->ultimo_movimiento ? \Illuminate\Support\Carbon::parse($cliente->ultimo_movimiento)->format('d/m/Y h:i A') : '',
                     optional($cliente->created_at)->format('d/m/Y'),
-                ]);
+                ], ';');
             }
 
             fclose($handle);
